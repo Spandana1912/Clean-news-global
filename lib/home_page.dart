@@ -1,9 +1,124 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
+import 'models/article.dart';
+import 'services/news_api_service.dart';
 import 'profile_page.dart';
 import 'saved_page.dart';
 import 'settings_page.dart';
 import 'theme.dart';
+
+
+class ArticleWebViewPage extends StatefulWidget {
+  final String articleUrl;
+
+  const ArticleWebViewPage({
+    super.key,
+    required this.articleUrl,
+  });
+
+  @override
+  State<ArticleWebViewPage> createState() => _ArticleWebViewPageState();
+}
+
+class _ArticleWebViewPageState extends State<ArticleWebViewPage> {
+  late final WebViewController _controller;
+  int _loadingProgress = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final uri = Uri.tryParse(widget.articleUrl);
+
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (progress) {
+            if (!mounted) return;
+            setState(() {
+              _loadingProgress = progress;
+            });
+          },
+          onPageStarted: (_) {
+            if (!mounted) return;
+            setState(() {
+              _loadingProgress = 0;
+            });
+          },
+          onPageFinished: (_) {
+            if (!mounted) return;
+            setState(() {
+              _loadingProgress = 100;
+            });
+          },
+          onWebResourceError: (error) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Unable to load this article.'),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+        ),
+      );
+
+    if (uri != null) {
+      _controller.loadRequest(uri);
+    }
+  }
+
+  Future<bool> _handleBack() async {
+    if (await _controller.canGoBack()) {
+      await _controller.goBack();
+      return false;
+    }
+
+    return true;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _handleBack,
+      child: Scaffold(
+        backgroundColor: paperColor,
+        appBar: AppBar(
+          backgroundColor: paperColor,
+          foregroundColor: inkColor,
+          elevation: 0,
+          title: const Text(
+            'ARTICLE',
+            style: TextStyle(
+              color: inkColor,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.5,
+            ),
+          ),
+          bottom: _loadingProgress < 100
+              ? PreferredSize(
+                  preferredSize: const Size.fromHeight(2),
+                  child: LinearProgressIndicator(
+                    value: _loadingProgress / 100,
+                    backgroundColor: fadedColor,
+                    color: brownColor,
+                  ),
+                )
+              : null,
+        ),
+        body: SafeArea(
+          child: WebViewWidget(
+            controller: _controller,
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,11 +131,20 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
   // ==========================================================
+  // NEWS API
+  // ==========================================================
+
+  final NewsApiService _newsApiService = NewsApiService();
+
+  List<Article> _articles = [];
+  bool _isLoadingNews = true;
+  String? _newsError;
+
+  // ==========================================================
   // CATEGORIES
   // ==========================================================
 
   final List<String> categories = [
-
     "All",
     "Business",
     "Sports",
@@ -28,10 +152,12 @@ class _HomePageState extends State<HomePage> {
     "Health",
     "Science",
     "Entertainment",
-
   ];
 
   int selectedCategory = 0;
+
+  // News region: India is the default.
+  bool _isInternational = false;
 
   int bottomIndex = 0;
 
@@ -39,139 +165,99 @@ class _HomePageState extends State<HomePage> {
   // BOOKMARK STATES
   // ==========================================================
 
-  final List<bool> bookmarked =
-      List.generate(8, (index) => false);
+  List<bool> bookmarked = [];
 
   // ==========================================================
-  // NEWS DATA
+  // FETCH NEWS
   // ==========================================================
 
-  final List<Map<String, String>> news = [
+  Future<void> _fetchNews({String? category}) async {
+    if (mounted) {
+      setState(() {
+        _isLoadingNews = true;
+        _newsError = null;
+      });
+    }
 
-    {
-      "title":
-          "Technology is transforming the way we live",
+    try {
+      final List<Article> articles;
 
-      "description":
-          "Discover the latest technology trends and innovations shaping our future.",
+      if (_isInternational) {
+        // International mode uses NewsAPI's global search endpoint.
+        articles = await _newsApiService.getInternationalNews(
+          category: category,
+        );
+      } else {
+        // India is the default news region.
+        articles = await _newsApiService.getIndiaNews(
+          category: category,
+        );
+      }
 
-      "source":
-          "Tech Daily",
+      if (!mounted) return;
 
-      "time":
-          "1 hour ago",
-    },
+      setState(() {
+        _articles = articles;
 
-    {
-      "title":
-          "Global markets show strong movement",
+        // The article list changes when the category changes, so reset
+        // bookmark states to avoid attaching an old bookmark to a
+        // different article.
+        bookmarked = List<bool>.filled(articles.length, false);
 
-      "description":
-          "Markets around the world respond to the latest economic developments.",
+        _isLoadingNews = false;
+        _newsError = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
 
-      "source":
-          "Business Today",
+      setState(() {
+        _isLoadingNews = false;
+        _newsError = e.toString();
+      });
+    }
+  }
 
-      "time":
-          "2 hours ago",
-    },
+  // ==========================================================
+  // INITIALIZE HOME PAGE
+  // ==========================================================
 
-    {
-      "title":
-          "New discoveries changing modern science",
+  @override
+  void initState() {
+    super.initState();
 
-      "description":
-          "Researchers make important discoveries that could influence the future.",
+    _fetchNews();
+  }
 
-      "source":
-          "Science World",
+  // ==========================================================
+  // SAVED PAGE COMPATIBILITY
+  // ==========================================================
 
-      "time":
-          "3 hours ago",
-    },
+  // SavedPage currently expects the older Map-based news format.
+  // This converts the live Article objects without changing SavedPage.
+  List<Map<String, String>> get news {
+    return _articles.map((article) {
+      return {
+        "title": article.title,
+        "description": article.description,
+        "source": article.source,
+        "time": article.publishedAt,
+      };
+    }).toList();
+  }
 
-    {
-      "title":
-          "Sports world prepares for a major event",
-
-      "description":
-          "Athletes around the world are getting ready for an exciting competition.",
-
-      "source":
-          "Sports Daily",
-
-      "time":
-          "4 hours ago",
-    },
-
-    {
-      "title":
-          "Health experts share useful wellness tips",
-
-      "description":
-          "Simple lifestyle changes can contribute to a healthier everyday life.",
-
-      "source":
-          "Health News",
-
-      "time":
-          "5 hours ago",
-    },
-
-    {
-      "title":
-          "Entertainment industry announces new projects",
-
-      "description":
-          "The latest announcements from movies, music and entertainment.",
-
-      "source":
-          "Entertainment Weekly",
-
-      "time":
-          "6 hours ago",
-    },
-
-    {
-      "title":
-          "Artificial Intelligence continues to evolve",
-
-      "description":
-          "AI research is creating new possibilities across multiple industries.",
-
-      "source":
-          "AI Today",
-
-      "time":
-          "7 hours ago",
-    },
-
-    {
-      "title":
-          "Important global updates you should know",
-
-      "description":
-          "Here are some of the most important stories developing around the world.",
-
-      "source":
-          "Global News",
-
-      "time":
-          "8 hours ago",
-    },
-  ];
+  // ==========================================================
+  // YOUR EXISTING CODE CONTINUES BELOW
+  // ==========================================================
 
   // ==========================================================
   // TOGGLE BOOKMARK
   // ==========================================================
 
   void toggleBookmark(int index) {
+    if (index < 0 || index >= bookmarked.length) return;
 
     setState(() {
-
-      bookmarked[index] =
-          !bookmarked[index];
-
+      bookmarked[index] = !bookmarked[index];
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -237,11 +323,70 @@ class _HomePageState extends State<HomePage> {
   // READ MORE
   // ==========================================================
 
+  Future<void> _openArticle(String url) async {
+    if (url.trim().isEmpty) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Article link is not available.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final uri = Uri.tryParse(url);
+
+    if (uri == null || !uri.hasScheme) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid article link.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // On Android/iOS/macOS, keep the reader inside Clean News Global.
+    // On Flutter Web, use the browser because webview_flutter does not
+    // provide the same embedded WebView experience on web.
+    if (!kIsWeb) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ArticleWebViewPage(
+            articleUrl: url,
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Chrome/web fallback.
+    final opened = await launchUrl(
+      uri,
+      mode: LaunchMode.platformDefault,
+    );
+
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not open the article.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+
   void showArticle(
       BuildContext context,
       int index) {
 
-    final article = news[index];
+    final article = _articles[index];
 
     showDialog(
 
@@ -266,7 +411,7 @@ class _HomePageState extends State<HomePage> {
 
           title: Text(
 
-            article["title"]!,
+            article.title,
 
             style: const TextStyle(
               color: inkColor,
@@ -292,7 +437,7 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 15),
 
                 Text(
-                  article["description"]!,
+                  article.description,
 
                   style: const TextStyle(
                     color: brownColor,
@@ -304,7 +449,7 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 20),
 
                 Text(
-                  "${article["source"]}  •  ${article["time"]}",
+                  "${article.source}  •  ${article.publishedAt}",
 
                   style: const TextStyle(
                     fontWeight:
@@ -348,7 +493,7 @@ class _HomePageState extends State<HomePage> {
       int index) {
 
     final item =
-        news[index];
+        _articles[index];
 
     return Container(
 
@@ -405,7 +550,7 @@ class _HomePageState extends State<HomePage> {
                 child:
                     Image.network(
 
-                  "https://picsum.photos/600/300?random=$index",
+                  item.imageUrl,
 
                   height:
                       190,
@@ -568,7 +713,7 @@ class _HomePageState extends State<HomePage> {
 
                 Text(
 
-                  item["title"]!,
+                  item.title,
 
                   maxLines:
                       3,
@@ -610,7 +755,7 @@ class _HomePageState extends State<HomePage> {
 
                 Text(
 
-                  item["description"]!,
+                  item.description,
 
                   maxLines:
                       3,
@@ -652,7 +797,7 @@ class _HomePageState extends State<HomePage> {
 
                     Text(
 
-                      item["source"]!,
+                      item.source,
 
                       style:
                           const TextStyle(
@@ -672,7 +817,7 @@ class _HomePageState extends State<HomePage> {
 
                     Text(
 
-                      item["time"]!,
+                      item.publishedAt,
 
                       style:
                           const TextStyle(
@@ -710,9 +855,8 @@ class _HomePageState extends State<HomePage> {
 
                       onPressed: () {
 
-                        showArticle(
-                          context,
-                          index,
+                        _openArticle(
+                          item.articleUrl,
                         );
                       },
 
@@ -947,14 +1091,9 @@ class _HomePageState extends State<HomePage> {
             paperColor,
 
         onRefresh: () async {
+          await _fetchNews();
 
-          await Future.delayed(
-            const Duration(
-              seconds: 1,
-            ),
-          );
-
-          setState(() {});
+          if (!mounted) return;
 
           ScaffoldMessenger.of(context)
               .showSnackBar(
@@ -1173,6 +1312,85 @@ class _HomePageState extends State<HomePage> {
             ),
 
             // ==================================================
+            // NEWS REGION
+            // ==================================================
+
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    const Text(
+                      'NEWS FROM',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.2,
+                        color: inkColor,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ChoiceChip(
+                      label: const Text('INDIA'),
+                      selected: !_isInternational,
+                      onSelected: (value) {
+                        if (!value) return;
+
+                        setState(() {
+                          _isInternational = false;
+                          selectedCategory = 0;
+                        });
+
+                        _fetchNews();
+                      },
+                      selectedColor: brownColor,
+                      backgroundColor: cardColor,
+                      labelStyle: TextStyle(
+                        color: !_isInternational ? paperColor : inkColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero,
+                        side: BorderSide(color: borderColor),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ChoiceChip(
+                      label: const Text('INTERNATIONAL'),
+                      selected: _isInternational,
+                      onSelected: (value) {
+                        if (!value) return;
+
+                        setState(() {
+                          _isInternational = true;
+                          selectedCategory = 0;
+                        });
+
+                        _fetchNews();
+                      },
+                      selectedColor: brownColor,
+                      backgroundColor: cardColor,
+                      labelStyle: TextStyle(
+                        color: _isInternational ? paperColor : inkColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero,
+                        side: BorderSide(color: borderColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 14),
+            ),
+
+            // ==================================================
             // CATEGORY CHIPS
             // ==================================================
 
@@ -1226,12 +1444,18 @@ class _HomePageState extends State<HomePage> {
                         onSelected:
                             (value) {
 
+                          if (!value) return;
+
                           setState(() {
-
-                            selectedCategory =
-                                index;
-
+                            selectedCategory = index;
                           });
+
+                          final category =
+                              index == 0
+                                  ? null
+                                  : categories[index].toLowerCase();
+
+                          _fetchNews(category: category);
                         },
 
                         selectedColor:
@@ -1301,23 +1525,86 @@ class _HomePageState extends State<HomePage> {
             // NEWS LIST
             // ==================================================
 
-            SliverList(
-
-              delegate:
-                  SliverChildBuilderDelegate(
-
-                (context, index) {
-
-                  return newsCard(
-                    context,
-                    index,
-                  );
-                },
-
-                childCount:
-                    news.length,
+            if (_isLoadingNews)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
               ),
-            ),
+
+            if (!_isLoadingNews && _newsError != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 40,
+                          color: brownColor,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          "Unable to load today's news.",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: inkColor,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _newsError!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: brownColor,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: _fetchNews,
+                          child: const Text("TRY AGAIN"),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            if (!_isLoadingNews &&
+                _newsError == null &&
+                _articles.isEmpty)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Center(
+                    child: Text(
+                      "No news articles available right now.",
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
+
+            if (!_isLoadingNews &&
+                _newsError == null &&
+                _articles.isNotEmpty)
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    return newsCard(
+                      context,
+                      index,
+                    );
+                  },
+                  childCount: _articles.length,
+                ),
+              ),
 
             // ==================================================
             // FOOTER
