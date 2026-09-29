@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "725968110216",
+    "project_id": "clean-news-global-2f8e1",
+    "storage_bucket": "clean-news-global-2f8e1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:725968110216:android:e1a8563e611d6d42d7153d",
+        "android_client_info": {
+          "package_name": "com.example.newsapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCK5QWwIp_AJh5Tt9DFmDj9qdjdrzB5cw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'home_page.dart';
 import 'register_page.dart';
-import 'theme.dart';
+import 'services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,29 +21,21 @@ class _LoginPageState extends State<LoginPage> {
       TextEditingController();
 
   bool hidePassword = true;
+  bool _isLoading = false;
+  final AuthService _authService = AuthService();
 
   // ==========================================================
   // LOGIN
   // ==========================================================
 
-  void login() {
+  Future<void> login() async {
+    final usernameOrEmail = usernameController.text.trim();
+    final password = passwordController.text;
 
-    if (usernameController.text.trim().isNotEmpty &&
-        passwordController.text.trim().isNotEmpty) {
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const HomePage(),
-        ),
-      );
-
-    } else {
-
+    if (usernameOrEmail.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: const Color(0xFF30251E),
-
           content: Text(
             "Please enter your username and password.",
             style: GoogleFonts.libreBaskerville(
@@ -51,10 +43,52 @@ class _LoginPageState extends State<LoginPage> {
               fontSize: 12,
             ),
           ),
-
           behavior: SnackBarBehavior.floating,
         ),
       );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _authService.loginWithUsernameOrEmail(
+        identifier: usernameOrEmail,
+        password: password,
+      );
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const HomePage(),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFF30251E),
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+            style: GoogleFonts.libreBaskerville(
+              color: const Color(0xFFF3E8D0),
+              fontSize: 12,
+            ),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -699,7 +733,7 @@ class _LoginPageState extends State<LoginPage> {
                             ElevatedButton(
 
                           onPressed:
-                              login,
+                              _isLoading ? null : login,
 
                           style:
                               ElevatedButton.styleFrom(
@@ -720,8 +754,16 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
 
-                          child:
-                              Text(
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Color(0xFFF3E8D0),
+                                  ),
+                                )
+                              : Text(
 
                             "LOGIN",
 
@@ -771,7 +813,7 @@ class _LoginPageState extends State<LoginPage> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const RegisterPage(),
+                                    builder: (context) =>  RegisterPage(),
                                   ),
                                 );
                               },
@@ -861,4 +903,3 @@ class _LoginPageState extends State<LoginPage> {
 // ============================================================
 // HOME PAGE
 // ============================================================
-
