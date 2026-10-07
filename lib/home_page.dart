@@ -2,22 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'models/article.dart';
 import 'services/news_api_service.dart';
+import 'services/firestore_service.dart';
 import 'profile_page.dart';
 import 'saved_page.dart';
 import 'settings_page.dart';
+import 'settings_controller.dart';
 import 'theme.dart';
+import 'notifications_page.dart';
 
+// ==========================================================
+// ARTICLE WEB VIEW
+// ==========================================================
 
 class ArticleWebViewPage extends StatefulWidget {
   final String articleUrl;
 
-  const ArticleWebViewPage({
-    super.key,
-    required this.articleUrl,
-  });
+  const ArticleWebViewPage({super.key, required this.articleUrl});
 
   @override
   State<ArticleWebViewPage> createState() => _ArticleWebViewPageState();
@@ -25,6 +32,7 @@ class ArticleWebViewPage extends StatefulWidget {
 
 class _ArticleWebViewPageState extends State<ArticleWebViewPage> {
   late final WebViewController _controller;
+
   int _loadingProgress = 0;
 
   @override
@@ -39,24 +47,28 @@ class _ArticleWebViewPageState extends State<ArticleWebViewPage> {
         NavigationDelegate(
           onProgress: (progress) {
             if (!mounted) return;
+
             setState(() {
               _loadingProgress = progress;
             });
           },
           onPageStarted: (_) {
             if (!mounted) return;
+
             setState(() {
               _loadingProgress = 0;
             });
           },
           onPageFinished: (_) {
             if (!mounted) return;
+
             setState(() {
               _loadingProgress = 100;
             });
           },
           onWebResourceError: (error) {
             if (!mounted) return;
+
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Unable to load this article.'),
@@ -83,18 +95,28 @@ class _ArticleWebViewPageState extends State<ArticleWebViewPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final backgroundColor = isDark ? darkPaperColor : paperColor;
+
+    final textColor = isDark ? darkInkColor : inkColor;
+
+    final accentColor = isDark ? darkBrownColor : brownColor;
+
+    final fadedBackgroundColor = isDark ? darkFadedColor : fadedColor;
+
     return WillPopScope(
       onWillPop: _handleBack,
       child: Scaffold(
-        backgroundColor: paperColor,
+        backgroundColor: backgroundColor,
         appBar: AppBar(
-          backgroundColor: paperColor,
-          foregroundColor: inkColor,
+          backgroundColor: backgroundColor,
+          foregroundColor: textColor,
           elevation: 0,
-          title: const Text(
+          title: Text(
             'ARTICLE',
             style: TextStyle(
-              color: inkColor,
+              color: textColor,
               fontWeight: FontWeight.w900,
               letterSpacing: 1.5,
             ),
@@ -104,32 +126,32 @@ class _ArticleWebViewPageState extends State<ArticleWebViewPage> {
                   preferredSize: const Size.fromHeight(2),
                   child: LinearProgressIndicator(
                     value: _loadingProgress / 100,
-                    backgroundColor: fadedColor,
-                    color: brownColor,
+                    backgroundColor: fadedBackgroundColor,
+                    color: accentColor,
                   ),
                 )
               : null,
         ),
-        body: SafeArea(
-          child: WebViewWidget(
-            controller: _controller,
-          ),
-        ),
+        body: SafeArea(child: WebViewWidget(controller: _controller)),
       ),
     );
   }
 }
 
+// ==========================================================
+// HOME PAGE
+// ==========================================================
+
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final SettingsController settingsController;
+
+  const HomePage({super.key, required this.settingsController});
 
   @override
-  State<HomePage> createState() =>
-      _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-
   // ==========================================================
   // NEWS API
   // ==========================================================
@@ -137,8 +159,14 @@ class _HomePageState extends State<HomePage> {
   final NewsApiService _newsApiService = NewsApiService();
 
   List<Article> _articles = [];
+
   bool _isLoadingNews = true;
+
   String? _newsError;
+
+  bool hasNotification = false;
+
+  String _username = '';
 
   // ==========================================================
   // CATEGORIES
@@ -155,8 +183,9 @@ class _HomePageState extends State<HomePage> {
   ];
 
   int selectedCategory = 0;
+  int _newsTransitionKey = 0;
 
-  // News region: India is the default.
+  // India is the default region.
   bool _isInternational = false;
 
   int bottomIndex = 0;
@@ -168,13 +197,40 @@ class _HomePageState extends State<HomePage> {
   List<bool> bookmarked = [];
 
   // ==========================================================
+  // LOAD USERNAME
+  // ==========================================================
+
+  Future<void> _loadUsername() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
+    try {
+      final firestoreService = FirestoreService();
+
+      final profile = await firestoreService.getUserProfile(user.uid);
+
+      if (!mounted) return;
+
+      final data = profile.data();
+
+      if (data != null && data['username'] != null) {
+        setState(() {
+          _username = data['username'].toString();
+        });
+      }
+    } catch (e) {
+      debugPrint('Could not load username: $e');
+    }
+  }
+
+  // ==========================================================
   // FETCH NEWS
   // ==========================================================
 
   Future<void> _fetchNews({String? category}) async {
     if (mounted) {
       setState(() {
-        _isLoadingNews = true;
         _newsError = null;
       });
     }
@@ -183,15 +239,11 @@ class _HomePageState extends State<HomePage> {
       final List<Article> articles;
 
       if (_isInternational) {
-        // International mode uses NewsAPI's global search endpoint.
         articles = await _newsApiService.getInternationalNews(
           category: category,
         );
       } else {
-        // India is the default news region.
-        articles = await _newsApiService.getIndiaNews(
-          category: category,
-        );
+        articles = await _newsApiService.getIndiaNews(category: category);
       }
 
       if (!mounted) return;
@@ -199,13 +251,17 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _articles = articles;
 
-        // The article list changes when the category changes, so reset
-        // bookmark states to avoid attaching an old bookmark to a
-        // different article.
         bookmarked = List<bool>.filled(articles.length, false);
+
+        hasNotification =
+            widget.settingsController.notificationsEnabled &&
+            articles.isNotEmpty;
 
         _isLoadingNews = false;
         _newsError = null;
+
+        // Change the key AFTER the new articles arrive.
+        _newsTransitionKey++;
       });
     } catch (e) {
       if (!mounted) return;
@@ -226,14 +282,13 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     _fetchNews();
+    _loadUsername();
   }
 
   // ==========================================================
   // SAVED PAGE COMPATIBILITY
   // ==========================================================
 
-  // SavedPage currently expects the older Map-based news format.
-  // This converts the live Article objects without changing SavedPage.
   List<Map<String, String>> get news {
     return _articles.map((article) {
       return {
@@ -241,54 +296,42 @@ class _HomePageState extends State<HomePage> {
         "description": article.description,
         "source": article.source,
         "time": article.publishedAt,
+        "url": article.articleUrl,
       };
     }).toList();
   }
-
-  // ==========================================================
-  // YOUR EXISTING CODE CONTINUES BELOW
-  // ==========================================================
 
   // ==========================================================
   // TOGGLE BOOKMARK
   // ==========================================================
 
   void toggleBookmark(int index) {
-    if (index < 0 || index >= bookmarked.length) return;
+    if (index < 0 || index >= bookmarked.length) {
+      return;
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final accentColor = isDark ? darkBrownColor : brownColor;
+
+    final snackbarTextColor = isDark ? darkInkColor : paperColor;
 
     setState(() {
       bookmarked[index] = !bookmarked[index];
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-
       SnackBar(
-
-        duration:
-            const Duration(seconds: 1),
-
-        backgroundColor:
-            brownColor,
-
+        duration: const Duration(seconds: 1),
+        backgroundColor: accentColor,
         content: Text(
-
           bookmarked[index]
               ? "Article saved to your archive."
               : "Article removed from your archive.",
-
-          style: const TextStyle(
-            color: paperColor,
-          ),
+          style: TextStyle(color: snackbarTextColor),
         ),
-
-        behavior:
-            SnackBarBehavior.floating,
-
-        shape:
-            const RoundedRectangleBorder(
-          borderRadius:
-              BorderRadius.zero,
-        ),
+        behavior: SnackBarBehavior.floating,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       ),
     );
   }
@@ -297,30 +340,75 @@ class _HomePageState extends State<HomePage> {
   // SHARE
   // ==========================================================
 
-  void shareNews() {
-
-    ScaffoldMessenger.of(context).showSnackBar(
-
-      const SnackBar(
-
-        backgroundColor:
-            brownColor,
-
-        content: Text(
-          "Article ready to share.",
-          style: TextStyle(
-            color: paperColor,
-          ),
+  void shareNews(String url) {
+    if (url.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Article link is not available."),
+          behavior: SnackBarBehavior.floating,
         ),
+      );
 
-        behavior:
-            SnackBarBehavior.floating,
-      ),
+      return;
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    //final backgroundColor = isDark ? darkPaperColor : paperColor;
+
+    final cardBackgroundColor = isDark ? darkCardColor : cardColor;
+
+    final textColor = isDark ? darkInkColor : inkColor;
+
+    final accentColor = isDark ? darkBrownColor : brownColor;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: cardBackgroundColor,
+          title: Text(
+            "Share Article",
+            style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
+          ),
+          content: SelectableText(
+            url,
+            style: TextStyle(fontSize: 13, color: accentColor),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("Close", style: TextStyle(color: accentColor)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: url));
+
+                Navigator.pop(context);
+
+                ScaffoldMessenger.of(this.context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Link copied!"),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentColor,
+                foregroundColor: isDark ? darkPaperColor : paperColor,
+              ),
+              child: const Text("Copy Link"),
+            ),
+          ],
+        );
+      },
     );
   }
 
   // ==========================================================
-  // READ MORE
+  // OPEN ARTICLE
   // ==========================================================
 
   Future<void> _openArticle(String url) async {
@@ -333,6 +421,7 @@ class _HomePageState extends State<HomePage> {
           behavior: SnackBarBehavior.floating,
         ),
       );
+
       return;
     }
 
@@ -347,29 +436,24 @@ class _HomePageState extends State<HomePage> {
           behavior: SnackBarBehavior.floating,
         ),
       );
+
       return;
     }
 
-    // On Android/iOS/macOS, keep the reader inside Clean News Global.
-    // On Flutter Web, use the browser because webview_flutter does not
-    // provide the same embedded WebView experience on web.
+    // Android / iOS / macOS:
+    // open inside Clean News Global.
     if (!kIsWeb) {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => ArticleWebViewPage(
-            articleUrl: url,
-          ),
-        ),
+        MaterialPageRoute(builder: (_) => ArticleWebViewPage(articleUrl: url)),
       );
+
       return;
     }
 
-    // Chrome/web fallback.
-    final opened = await launchUrl(
-      uri,
-      mode: LaunchMode.platformDefault,
-    );
+    // Flutter Web:
+    // use browser.
+    final opened = await launchUrl(uri, mode: LaunchMode.platformDefault);
 
     if (!opened && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -381,100 +465,71 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // ==========================================================
+  // SHOW ARTICLE
+  // ==========================================================
 
-  void showArticle(
-      BuildContext context,
-      int index) {
-
+  void showArticle(BuildContext context, int index) {
     final article = _articles[index];
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final backgroundColor = isDark ? darkPaperColor : paperColor;
+
+    final textColor = isDark ? darkInkColor : inkColor;
+
+    final accentColor = isDark ? darkBrownColor : brownColor;
+
+    final dividerColor = isDark ? darkBorderColor : borderColor;
+
     showDialog(
-
       context: context,
-
       builder: (context) {
-
         return AlertDialog(
-
-          backgroundColor:
-              paperColor,
-
-          shape:
-              const RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.zero,
-
-            side: BorderSide(
-              color: borderColor,
-            ),
+          backgroundColor: backgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
+            side: BorderSide(color: dividerColor),
           ),
-
           title: Text(
-
             article.title,
-
-            style: const TextStyle(
-              color: inkColor,
-              fontWeight:
-                  FontWeight.w900,
-            ),
+            style: TextStyle(color: textColor, fontWeight: FontWeight.w900),
           ),
-
           content: SingleChildScrollView(
-
             child: Column(
-
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                Container(
-                  height: 2,
-                  color: inkColor,
-                ),
-
+                Container(height: 2, color: textColor),
                 const SizedBox(height: 15),
-
                 Text(
                   article.description,
-
-                  style: const TextStyle(
-                    color: brownColor,
+                  style: TextStyle(
+                    color: accentColor,
                     height: 1.6,
                     fontSize: 15,
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 Text(
                   "${article.source}  •  ${article.publishedAt}",
-
-                  style: const TextStyle(
-                    fontWeight:
-                        FontWeight.bold,
-                    color: inkColor,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
                   ),
                 ),
               ],
             ),
           ),
-
           actions: [
-
             TextButton(
-
               onPressed: () {
                 Navigator.pop(context);
               },
-
-              child: const Text(
+              child: Text(
                 "CLOSE",
                 style: TextStyle(
-                  color: brownColor,
-                  fontWeight:
-                      FontWeight.bold,
+                  color: accentColor,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
@@ -484,422 +539,261 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  String _getFallbackImage() {
+    switch (categories[selectedCategory].toLowerCase()) {
+      case 'business':
+        return 'https://images.unsplash.com/39/lIZrwvbeRuuzqOoWJUEn_Photoaday_CSD%20(1%20of%201)-5.jpg?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA==';
+      case 'sports':
+        return 'https://images.pexels.com/photos/9376460/pexels-photo-9376460.jpeg?h=1000&w=1500&fit=crop';
+      case 'technology':
+        return 'https://images.unsplash.com/photo-1644088379091-d574269d422f?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dGVjaG5vbG9neXxlbnwwfHwwfHx8MA==';
+      case 'health':
+        return 'https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bWVkaWNhbCUyMGFzc2lzdGFuY2V8ZW58MHx8MHx8fDA=';
+      case 'science':
+        return 'https://images.unsplash.com/photo-1628595351029-c2bf17511435?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2NpZW5jZXxlbnwwfHwwfHx8MA==';
+      case 'entertainment':
+        return 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA==';
+      case 'all':
+      default:
+        return 'https://images.unsplash.com/photo-1521295121783-8a321d551ad2?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Z2xvYmV8ZW58MHx8MHx8fDA=';
+    }
+  }
+
   // ==========================================================
   // NEWS CARD
   // ==========================================================
 
-  Widget newsCard(
-      BuildContext context,
-      int index) {
+  Widget newsCard(BuildContext context, int index) {
+    final item = _articles[index];
 
-    final item =
-        _articles[index];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final cardBackgroundColor = isDark ? darkCardColor : cardColor;
+
+    final textColor = isDark ? darkInkColor : inkColor;
+
+    final accentColor = isDark ? darkBrownColor : brownColor;
+
+    final dividerColor = isDark ? darkBorderColor : borderColor;
+
+    // Text placed on the dark/light category badge.
+    final badgeTextColor = isDark ? darkPaperColor : paperColor;
+
+    // Text placed on selected bookmark background.
+    final bookmarkBackgroundColor = isDark ? darkPaperColor : paperColor;
 
     return Container(
-
-      margin:
-          const EdgeInsets.only(
-        left: 16,
-        right: 16,
-        bottom: 20,
-      ),
-
-      decoration:
-          BoxDecoration(
-
-        color:
-            cardColor,
-
-        border:
-            Border.all(
-          color:
-              borderColor,
-          width: 1,
-        ),
-
+      margin: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
+      decoration: BoxDecoration(
+        color: cardBackgroundColor,
+        border: Border.all(color: dividerColor, width: 1),
         boxShadow: const [
-
           BoxShadow(
-            color:
-                Color(0x221F1712),
-            blurRadius:
-                6,
-            offset:
-                Offset(3, 4),
+            color: Color(0x221F1712),
+            blurRadius: 6,
+            offset: Offset(3, 4),
           ),
         ],
       ),
+      child: InkWell(
+        onTap: () {
+          _openArticle(item.articleUrl);
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ==================================================
+            // IMAGE
+            // ==================================================
 
-      child: Column(
-
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-
-        children: [
-
-          // ==================================================
-          // IMAGE
-          // ==================================================
-
-          Stack(
-
-            children: [
-
-              ClipRRect(
-
-                child:
-                    Image.network(
-
-                  item.imageUrl,
-
-                  height:
-                      190,
-
-                  width:
-                      double.infinity,
-
-                  fit:
-                      BoxFit.cover,
-
-                  errorBuilder:
-                      (context,
-                          error,
-                          stackTrace) {
-
-                    return Container(
-
-                      height:
-                          190,
-
-                      width:
-                          double.infinity,
-
-                      color:
-                          fadedColor,
-
-                      child:
-                          const Center(
-
-                        child:
-                            Icon(
-                          Icons
-                              .image_not_supported,
-                          size:
-                              50,
-                          color:
-                              brownColor,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              // ==================================================
-              // CATEGORY BADGE
-              // ==================================================
-
-              Positioned(
-
-                top: 12,
-                left: 12,
-
-                child:
-                    Container(
-
-                  padding:
-                      const EdgeInsets
-                          .symmetric(
-                    horizontal: 12,
-                    vertical: 7,
-                  ),
-
-                  color:
-                      inkColor,
-
-                  child:
-                      Text(
-
-                    categories[
-                        selectedCategory],
-
-                    style:
-                        const TextStyle(
-
-                      color:
-                          paperColor,
-
-                      fontWeight:
-                          FontWeight.bold,
-
-                      fontSize:
-                          11,
-
-                      letterSpacing:
-                          1,
-                    ),
-                  ),
-                ),
-              ),
-
-              // ==================================================
-              // BOOKMARK
-              // ==================================================
-
-              Positioned(
-
-                top: 10,
-                right: 10,
-
-                child:
-                    Container(
-
-                  decoration:
-                      BoxDecoration(
-
-                    color:
-                        paperColor,
-
-                    border:
-                        Border.all(
-                      color:
-                          brownColor,
-                    ),
-                  ),
-
-                  child:
-                      IconButton(
-
-                    icon:
-                        Icon(
-
-                      bookmarked[index]
-                          ? Icons.bookmark
-                          : Icons.bookmark_border,
-
-                      color:
-                          brownColor,
-                    ),
-
-                    onPressed: () {
-
-                      toggleBookmark(
-                          index);
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          // ==================================================
-          // ARTICLE CONTENT
-          // ==================================================
-
-          Padding(
-
-            padding:
-                const EdgeInsets.all(17),
-
-            child:
-                Column(
-
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
+            Stack(
               children: [
+                ClipRRect(
+                  child: item.imageUrl.trim().isNotEmpty
+                      ? Image.network(
+                          item.imageUrl,
+                          height: 190,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.network(
+                              _getFallbackImage(),
+                              height: 190,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        )
+                      : Image.network(
+                          _getFallbackImage(),
+                          height: 190,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                ),
 
-                // HEADLINE
-
-                Text(
-
-                  item.title,
-
-                  maxLines:
-                      3,
-
-                  overflow:
-                      TextOverflow.ellipsis,
-
-                  style:
-                      const TextStyle(
-
-                    fontSize:
-                        22,
-
-                    fontWeight:
-                        FontWeight.w900,
-
-                    color:
-                        inkColor,
-
-                    height:
-                        1.15,
+                // ==================================================
+                // CATEGORY BADGE
+                // ==================================================
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 7,
+                    ),
+                    color: textColor,
+                    child: Text(
+                      categories[selectedCategory],
+                      style: TextStyle(
+                        color: badgeTextColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                        letterSpacing: 1,
+                      ),
+                    ),
                   ),
                 ),
 
-                const SizedBox(
-                    height: 8),
-
-                // DIVIDER
-
-                Container(
-                  height: 1,
-                  color: borderColor,
-                ),
-
-                const SizedBox(
-                    height: 10),
-
-                // DESCRIPTION
-
-                Text(
-
-                  item.description,
-
-                  maxLines:
-                      3,
-
-                  overflow:
-                      TextOverflow.ellipsis,
-
-                  style:
-                      const TextStyle(
-
-                    fontSize:
-                        14,
-
-                    color:
-                        brownColor,
-
-                    height:
-                        1.5,
-                  ),
-                ),
-
-                const SizedBox(
-                    height: 15),
-
-                // SOURCE + TIME
-
-                Row(
-
-                  children: [
-
-                    const Icon(
-                      Icons.public,
-                      size: 18,
-                      color: brownColor,
+                // ==================================================
+                // BOOKMARK
+                // ==================================================
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: bookmarkBackgroundColor,
+                      border: Border.all(color: accentColor),
                     ),
-
-                    const SizedBox(
-                        width: 7),
-
-                    Text(
-
-                      item.source,
-
-                      style:
-                          const TextStyle(
-
-                        fontWeight:
-                            FontWeight.bold,
-
-                        fontSize:
-                            13,
-
-                        color:
-                            inkColor,
+                    child: IconButton(
+                      icon: Icon(
+                        bookmarked[index]
+                            ? Icons.bookmark
+                            : Icons.bookmark_border,
+                        color: accentColor,
                       ),
-                    ),
-
-                    const Spacer(),
-
-                    Text(
-
-                      item.publishedAt,
-
-                      style:
-                          const TextStyle(
-
-                        color:
-                            brownColor,
-
-                        fontSize:
-                            11,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(
-                    height: 12),
-
-                // BOTTOM DIVIDER
-
-                Container(
-                  height: 1,
-                  color: borderColor,
-                ),
-
-                const SizedBox(
-                    height: 8),
-
-                // ACTIONS
-
-                Row(
-
-                  children: [
-
-                    TextButton.icon(
-
                       onPressed: () {
-
-                        _openArticle(
-                          item.articleUrl,
-                        );
+                        toggleBookmark(index);
                       },
-
-                      icon:
-                          const Icon(
-                        Icons
-                            .menu_book_outlined,
-                        size: 18,
-                      ),
-
-                      label:
-                          const Text(
-                        "READ ARTICLE",
-                      ),
-
-                      style:
-                          TextButton.styleFrom(
-
-                        foregroundColor:
-                            brownColor,
-                      ),
                     ),
-
-                    const Spacer(),
-
-                    IconButton(
-
-                      onPressed:
-                          shareNews,
-
-                      icon:
-                          const Icon(
-                        Icons.share_outlined,
-                        color:
-                            brownColor,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+
+            // ==================================================
+            // ARTICLE CONTENT
+            // ==================================================
+            Padding(
+              padding: const EdgeInsets.all(17),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // HEADLINE
+
+                  Text(
+                    item.title,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: textColor,
+                      height: 1.15,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // DIVIDER
+                  Container(height: 1, color: dividerColor),
+
+                  const SizedBox(height: 10),
+
+                  // DESCRIPTION
+                  Text(
+                    item.description,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: accentColor,
+                      height: 1.5,
+                    ),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  // SOURCE + TIME
+                  Row(
+                    children: [
+                      Icon(Icons.public, size: 18, color: accentColor),
+
+                      const SizedBox(width: 7),
+
+                      Expanded(
+                        child: Text(
+                          item.source,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: textColor,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 8),
+
+                      Text(
+                        item.publishedAt,
+                        style: TextStyle(color: accentColor, fontSize: 11),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // BOTTOM DIVIDER
+                  Container(height: 1, color: dividerColor),
+
+                  const SizedBox(height: 8),
+
+                  // ACTIONS
+                  Row(
+                    children: [
+                      TextButton.icon(
+                        onPressed: () {
+                          _openArticle(item.articleUrl);
+                        },
+                        icon: Icon(
+                          Icons.menu_book_outlined,
+                          size: 18,
+                          color: accentColor,
+                        ),
+                        label: Text(
+                          "READ ARTICLE",
+                          style: TextStyle(color: accentColor),
+                        ),
+                      ),
+
+                      const Spacer(),
+
+                      IconButton(
+                        icon: Icon(Icons.share, color: accentColor),
+                        onPressed: () {
+                          shareNews(item.articleUrl);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -908,57 +802,34 @@ class _HomePageState extends State<HomePage> {
   // SECTION HEADER
   // ==========================================================
 
-  Widget sectionHeader(
-      String title) {
+  Widget sectionHeader(BuildContext context, String title) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final textColor = isDark ? darkInkColor : inkColor;
+
+    final dividerColor = isDark ? darkBorderColor : borderColor;
 
     return Padding(
-
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 16,
-      ),
-
-      child:
-          Column(
-
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
         children: [
-
           Text(
-
             title,
-
-            style:
-                const TextStyle(
-
-              fontSize:
-                  22,
-
-              fontWeight:
-                  FontWeight.w900,
-
-              letterSpacing:
-                  2,
-
-              color:
-                  inkColor,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2,
+              color: textColor,
             ),
           ),
 
-          const SizedBox(
-              height: 5),
+          const SizedBox(height: 5),
 
-          Container(
-            height: 2,
-            color: inkColor,
-          ),
+          Container(height: 2, color: textColor),
 
-          const SizedBox(
-              height: 3),
+          const SizedBox(height: 3),
 
-          Container(
-            height: 1,
-            color: borderColor,
-          ),
+          Container(height: 1, color: dividerColor),
         ],
       ),
     );
@@ -969,857 +840,601 @@ class _HomePageState extends State<HomePage> {
   // ==========================================================
 
   @override
-  Widget build(
-      BuildContext context) {
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
+    final backgroundColor = isDark ? darkPaperColor : paperColor;
 
-      backgroundColor:
-          paperColor,
+    final cardBackgroundColor = isDark ? darkCardColor : cardColor;
 
-      // ========================================================
-      // APP BAR
-      // ========================================================
+    final textColor = isDark ? darkInkColor : inkColor;
 
-      appBar: AppBar(
+    final accentColor = isDark ? darkBrownColor : brownColor;
 
-        backgroundColor:
-            paperColor,
+    final dividerColor = isDark ? darkBorderColor : borderColor;
 
-        title:
+    final fadedBackgroundColor = isDark ? darkFadedColor : fadedColor;
 
-            const Column(
+    // Text used on selected chips.
+    final selectedChipTextColor = isDark ? darkPaperColor : paperColor;
 
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+    return Theme(
+      data: Theme.of(context).copyWith(
+        textTheme: GoogleFonts.libreBaskervilleTextTheme(
+          Theme.of(context).textTheme,
+        ),
+        primaryTextTheme: GoogleFonts.libreBaskervilleTextTheme(
+          Theme.of(context).primaryTextTheme,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: backgroundColor,
 
-          children: [
+        // ========================================================
+        // APP BAR
+        // ========================================================
+        appBar: AppBar(
+          backgroundColor: backgroundColor,
 
-            Text(
-
-              "THE CLEAN NEWS",
-
-              style:
-                  TextStyle(
-
-                fontSize:
-                    25,
-
-                fontWeight:
-                    FontWeight.w900,
-
-                letterSpacing:
-                    1,
-
-                color:
-                    inkColor,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "TODAY'S TEA ☕️",
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1,
+                  color: textColor,
+                ),
               ),
+
+              Text(
+                "GLOBAL EDITION  •  DAILY NEWS",
+                style: TextStyle(
+                  fontSize: 9,
+                  letterSpacing: 1.5,
+                  color: accentColor,
+                ),
+              ),
+            ],
+          ),
+
+          actions: [
+            if (_username.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Center(
+                  child: Text(
+                    "Hi, $_username 👋",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                    ),
+                  ),
+                ),
+              ),
+
+            Stack(
+              children: [
+                IconButton(
+                  onPressed: () async {
+                    setState(() {
+                      hasNotification = false;
+                    });
+
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            NotificationsPage(trendingNews: news),
+                      ),
+                    );
+                  },
+                  icon: Icon(Icons.notifications_none, color: textColor),
+                ),
+
+                if (hasNotification)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      width: 9,
+                      height: 9,
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
             ),
 
-            Text(
-
-              "GLOBAL EDITION  •  DAILY NEWS",
-
-              style:
-                  TextStyle(
-
-                fontSize:
-                    9,
-
-                letterSpacing:
-                    1.5,
-
-                color:
-                    brownColor,
-              ),
-            ),
+            const SizedBox(width: 8),
           ],
         ),
 
-        actions: [
+        // ========================================================
+        // BODY
+        // ========================================================
+        body: RefreshIndicator(
+          color: accentColor,
+          backgroundColor: backgroundColor,
 
-          IconButton(
+          onRefresh: () async {
+            await _fetchNews();
 
-            onPressed: () {
+            if (!mounted) return;
 
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: accentColor,
+                content: Text(
+                  "Today's edition has been refreshed.",
+                  style: TextStyle(color: selectedChipTextColor),
+                ),
+              ),
+            );
+          },
 
-                const SnackBar(
+          child: CustomScrollView(
+            slivers: [
+              // ==================================================
+              // DATE HEADER
+              // ==================================================
 
-                  backgroundColor:
-                      brownColor,
-
-                  content:
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 5, 16, 12),
+                  child: Row(
+                    children: [
                       Text(
-                    "No new notifications.",
-                    style:
-                        TextStyle(
-                      color:
-                          paperColor,
+                        DateFormat('EEEE').format(DateTime.now()).toUpperCase(),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                          letterSpacing: 1.5,
+                          color: accentColor,
+                        ),
+                      ),
+
+                      const Spacer(),
+
+                      Text(
+                        DateFormat('dd MMMM yyyy')
+                            .format(DateTime.now())
+                            .toUpperCase(),
+                        style: TextStyle(fontSize: 11, color: accentColor),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // ==================================================
+              // MAIN LINE
+              // ==================================================
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Container(height: 2, color: textColor),
+                ),
+              ),
+
+              // ==================================================
+              // TRENDING
+              // ==================================================
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      Icon(Icons.trending_up, color: accentColor),
+
+                      const SizedBox(width: 7),
+
+                      Text(
+                        "TRENDING TODAY",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.5,
+                          color: textColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 12)),
+
+              // ==================================================
+              // NEWS REGION
+              // ==================================================
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      Text(
+                        'NEWS FROM',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                          color: textColor,
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      // INDIA
+                      ChoiceChip(
+                        label: const Text('INDIA'),
+                        selected: !_isInternational,
+
+                        onSelected: (value) {
+                          if (!value) {
+                            return;
+                          }
+
+                          setState(() {
+                            _isInternational = false;
+                            selectedCategory = 0;
+                          });
+
+                          _fetchNews();
+                        },
+
+                        selectedColor: accentColor,
+
+                        backgroundColor: cardBackgroundColor,
+
+                        labelStyle: TextStyle(
+                          color: !_isInternational
+                              ? selectedChipTextColor
+                              : textColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
+
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                          side: BorderSide(color: dividerColor),
+                        ),
+                      ),
+
+                      const SizedBox(width: 8),
+
+                      // INTERNATIONAL
+                      ChoiceChip(
+                        label: const Text('INTERNATIONAL'),
+                        selected: _isInternational,
+
+                        onSelected: (value) {
+                          if (!value) {
+                            return;
+                          }
+
+                          setState(() {
+                            _isInternational = true;
+                            selectedCategory = 0;
+                          });
+
+                          _fetchNews();
+                        },
+
+                        selectedColor: accentColor,
+
+                        backgroundColor: cardBackgroundColor,
+
+                        labelStyle: TextStyle(
+                          color: _isInternational
+                              ? selectedChipTextColor
+                              : textColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
+
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                          side: BorderSide(color: dividerColor),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 14)),
+
+              // ==================================================
+              // CATEGORY CHIPS
+              // ==================================================
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 42,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+
+                    itemCount: categories.length,
+
+                    itemBuilder: (context, index) {
+                      final bool selected = selectedCategory == index;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(categories[index]),
+
+                          selected: selected,
+
+                          onSelected: (value) {
+                            if (!value) {
+                              return;
+                            }
+
+                            setState(() {
+                              selectedCategory = index;
+                            });
+
+                            final category = index == 0
+                                ? null
+                                : categories[index].toLowerCase();
+
+                            _fetchNews(category: category);
+                          },
+
+                          selectedColor: accentColor,
+
+                          backgroundColor: cardBackgroundColor,
+
+                          labelStyle: TextStyle(
+                            color: selected ? selectedChipTextColor : textColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
+                            side: BorderSide(color: dividerColor),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 22)),
+
+              // ==================================================
+              // TOP STORIES
+              // ==================================================
+              SliverToBoxAdapter(child: sectionHeader(context, "TOP STORIES")),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 18)),
+
+              // ==================================================
+              // NEWS LIST
+              // ==================================================
+              if (!_isLoadingNews && _newsError == null && _articles.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 600),
+                    switchInCurve: Curves.easeIn,
+                    switchOutCurve: Curves.easeOut,
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(opacity: animation, child: child);
+                    },
+                    child: Column(
+                      key: ValueKey(_newsTransitionKey),
+                      children: List.generate(
+                        _articles.length,
+                        (index) => newsCard(context, index),
+                      ),
                     ),
+                  ),
+                ),
+
+              // ==================================================
+              // ERROR
+              // ==================================================
+              if (!_isLoadingNews && _newsError != null)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 40,
+                            color: accentColor,
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          Text(
+                            "Unable to load today's news.",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: textColor,
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          Text(
+                            _newsError!,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: accentColor, fontSize: 12),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          TextButton(
+                            onPressed: _fetchNews,
+                            child: Text(
+                              "TRY AGAIN",
+                              style: TextStyle(color: accentColor),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+              // ==================================================
+              // NO NEWS
+              // ==================================================
+              if (!_isLoadingNews && _newsError == null && _articles.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: Text(
+                        "No news articles available right now.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: textColor),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // ==================================================
+              // FOOTER
+              // ==================================================
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(25),
+                  child: Column(
+                    children: [
+                      Divider(color: dividerColor, thickness: 2),
+
+                      const SizedBox(height: 8),
+
+                      Text(
+                        "THE CLEAN NEWS GLOBAL",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                          color: textColor,
+                        ),
+                      ),
+
+                      const SizedBox(height: 5),
+
+                      Text(
+                        "READ • DISCOVER • UNDERSTAND",
+                        style: TextStyle(
+                          fontSize: 9,
+                          letterSpacing: 2,
+                          color: accentColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // ========================================================
+        // BOTTOM NAVIGATION
+        // ========================================================
+        bottomNavigationBar: NavigationBar(
+          backgroundColor: cardBackgroundColor,
+
+          indicatorColor: fadedBackgroundColor,
+
+          selectedIndex: bottomIndex,
+
+          onDestinationSelected: (index) {
+            setState(() {
+              bottomIndex = index;
+            });
+
+            // SAVED
+
+            if (index == 1) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SavedPage(
+                    news: news,
+                    bookmarked: bookmarked,
+                    onBookmarkChanged: (articleIndex) {
+                      toggleBookmark(articleIndex);
+                    },
                   ),
                 ),
               );
-            },
+            }
 
-            icon:
-                const Icon(
-              Icons.notifications_none,
-              color:
-                  inkColor,
-            ),
-          ),
+            // SETTINGS
 
-          const SizedBox(
-              width: 8),
-        ],
-      ),
-
-      // ========================================================
-      // BODY
-      // ========================================================
-
-      body:
-
-          RefreshIndicator(
-
-        color:
-            brownColor,
-
-        backgroundColor:
-            paperColor,
-
-        onRefresh: () async {
-          await _fetchNews();
-
-          if (!mounted) return;
-
-          ScaffoldMessenger.of(context)
-              .showSnackBar(
-
-            const SnackBar(
-
-              backgroundColor:
-                  brownColor,
-
-              content:
-                  Text(
-                "Today's edition has been refreshed.",
-                style:
-                    TextStyle(
-                  color:
-                      paperColor,
-                ),
-              ),
-            ),
-          );
-        },
-
-        child:
-            CustomScrollView(
-
-          slivers: [
-
-            // ==================================================
-            // DATE HEADER
-            // ==================================================
-
-            SliverToBoxAdapter(
-
-              child:
-                  Padding(
-
-                padding:
-                    const EdgeInsets.fromLTRB(
-                  16,
-                  5,
-                  16,
-                  12,
-                ),
-
-                child:
-                    Row(
-
-                  children: [
-
-                    const Text(
-                      "WEDNESDAY",
-                      style:
-                          TextStyle(
-                        fontWeight:
-                            FontWeight.bold,
-                        fontSize:
-                            11,
-                        letterSpacing:
-                            1.5,
-                        color:
-                            brownColor,
-                      ),
-                    ),
-
-                    const Spacer(),
-
-                    const Text(
-                      "23 SEPTEMBER 2026",
-                      style:
-                          TextStyle(
-                        fontSize:
-                            11,
-                        color:
-                            brownColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // ==================================================
-            // MAIN LINE
-            // ==================================================
-
-            SliverToBoxAdapter(
-
-              child:
-                  Padding(
-
-                padding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 16,
-                ),
-
-                child:
-                    Container(
-                  height:
-                      2,
-                  color:
-                      inkColor,
-                ),
-              ),
-            ),
-
-            // ==================================================
-            // SEARCH
-            // ==================================================
-
-            SliverToBoxAdapter(
-
-              child:
-                  Padding(
-
-                padding:
-                    const EdgeInsets.all(
-                  16,
-                ),
-
-                child:
-                    TextField(
-
-                  decoration:
-                      InputDecoration(
-
-                    hintText:
-                        "Search the day's news...",
-
-                    prefixIcon:
-                        const Icon(
-                      Icons.search,
-                      color:
-                          brownColor,
-                    ),
-
-                    suffixIcon:
-                        IconButton(
-
-                      icon:
-                          const Icon(
-                        Icons.tune,
-                        color:
-                            brownColor,
-                      ),
-
-                      onPressed: () {
-
-                        ScaffoldMessenger
-                            .of(context)
-                            .showSnackBar(
-
-                          const SnackBar(
-                            content:
-                                Text(
-                              "Filter options coming soon.",
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+            if (index == 2) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SettingsPage(
+                    settingsController: widget.settingsController,
                   ),
                 ),
-              ),
-            ),
+              );
+            }
 
-            // ==================================================
-            // TRENDING
-            // ==================================================
+            // PROFILE
 
-            SliverToBoxAdapter(
-
-              child:
-                  Padding(
-
-                padding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 16,
-                ),
-
-                child:
-                    Row(
-
-                  children: [
-
-                    const Icon(
-                      Icons.trending_up,
-                      color:
-                          brownColor,
-                    ),
-
-                    const SizedBox(
-                        width: 7),
-
-                    const Text(
-                      "TRENDING TODAY",
-                      style:
-                          TextStyle(
-                        fontSize:
-                            14,
-                        fontWeight:
-                            FontWeight.w900,
-                        letterSpacing:
-                            1.5,
-                        color:
-                            inkColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SliverToBoxAdapter(
-              child:
-                  SizedBox(height: 12),
-            ),
-
-            // ==================================================
-            // NEWS REGION
-            // ==================================================
-
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    const Text(
-                      'NEWS FROM',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.2,
-                        color: inkColor,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    ChoiceChip(
-                      label: const Text('INDIA'),
-                      selected: !_isInternational,
-                      onSelected: (value) {
-                        if (!value) return;
-
-                        setState(() {
-                          _isInternational = false;
-                          selectedCategory = 0;
-                        });
-
-                        _fetchNews();
-                      },
-                      selectedColor: brownColor,
-                      backgroundColor: cardColor,
-                      labelStyle: TextStyle(
-                        color: !_isInternational ? paperColor : inkColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 11,
-                      ),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                        side: BorderSide(color: borderColor),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ChoiceChip(
-                      label: const Text('INTERNATIONAL'),
-                      selected: _isInternational,
-                      onSelected: (value) {
-                        if (!value) return;
-
-                        setState(() {
-                          _isInternational = true;
-                          selectedCategory = 0;
-                        });
-
-                        _fetchNews();
-                      },
-                      selectedColor: brownColor,
-                      backgroundColor: cardColor,
-                      labelStyle: TextStyle(
-                        color: _isInternational ? paperColor : inkColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 11,
-                      ),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                        side: BorderSide(color: borderColor),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 14),
-            ),
-
-            // ==================================================
-            // CATEGORY CHIPS
-            // ==================================================
-
-            SliverToBoxAdapter(
-
-              child:
-                  SizedBox(
-
-                height:
-                    42,
-
-                child:
-                    ListView.builder(
-
-                  scrollDirection:
-                      Axis.horizontal,
-
-                  padding:
-                      const EdgeInsets.symmetric(
-                    horizontal: 16,
-                  ),
-
-                  itemCount:
-                      categories.length,
-
-                  itemBuilder:
-                      (context, index) {
-
-                    bool selected =
-                        selectedCategory ==
-                            index;
-
-                    return Padding(
-
-                      padding:
-                          const EdgeInsets.only(
-                        right: 8,
-                      ),
-
-                      child:
-                          ChoiceChip(
-
-                        label:
-                            Text(
-                          categories[index],
-                        ),
-
-                        selected:
-                            selected,
-
-                        onSelected:
-                            (value) {
-
-                          if (!value) return;
-
-                          setState(() {
-                            selectedCategory = index;
-                          });
-
-                          final category =
-                              index == 0
-                                  ? null
-                                  : categories[index].toLowerCase();
-
-                          _fetchNews(category: category);
-                        },
-
-                        selectedColor:
-                            brownColor,
-
-                        backgroundColor:
-                            cardColor,
-
-                        labelStyle:
-                            TextStyle(
-
-                          color:
-
-                              selected
-                                  ? paperColor
-                                  : inkColor,
-
-                          fontWeight:
-                              FontWeight.bold,
-
-                          fontSize:
-                              12,
-                        ),
-
-                        shape:
-                            const RoundedRectangleBorder(
-
-                          borderRadius:
-                              BorderRadius.zero,
-
-                          side:
-                              BorderSide(
-                            color:
-                                borderColor,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-
-            const SliverToBoxAdapter(
-              child:
-                  SizedBox(height: 22),
-            ),
-
-            // ==================================================
-            // TOP STORIES
-            // ==================================================
-
-            SliverToBoxAdapter(
-
-              child:
-                  sectionHeader(
-                "TOP STORIES",
-              ),
-            ),
-
-            const SliverToBoxAdapter(
-              child:
-                  SizedBox(height: 18),
-            ),
-
-            // ==================================================
-            // NEWS LIST
-            // ==================================================
-
-            if (_isLoadingNews)
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Center(
-                    child: CircularProgressIndicator(),
+            if (index == 3) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProfilePage(
+                    news: news,
+                    bookmarked: bookmarked,
+                    onBookmarkChanged: toggleBookmark,
+                    settingsController: widget.settingsController,
                   ),
                 ),
-              ),
+              );
+            }
+          },
 
-            if (!_isLoadingNews && _newsError != null)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          size: 40,
-                          color: brownColor,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          "Unable to load today's news.",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: inkColor,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _newsError!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: brownColor,
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextButton(
-                          onPressed: _fetchNews,
-                          child: const Text("TRY AGAIN"),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+          destinations: [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined, color: accentColor),
+              selectedIcon: Icon(Icons.home, color: textColor),
+              label: "Home",
+            ),
 
-            if (!_isLoadingNews &&
-                _newsError == null &&
-                _articles.isEmpty)
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Center(
-                    child: Text(
-                      "No news articles available right now.",
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-              ),
+            NavigationDestination(
+              icon: Icon(Icons.bookmark_outline, color: accentColor),
+              selectedIcon: Icon(Icons.bookmark, color: textColor),
+              label: "Saved",
+            ),
 
-            if (!_isLoadingNews &&
-                _newsError == null &&
-                _articles.isNotEmpty)
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return newsCard(
-                      context,
-                      index,
-                    );
-                  },
-                  childCount: _articles.length,
-                ),
-              ),
+            NavigationDestination(
+              icon: Icon(Icons.settings_outlined, color: accentColor),
+              selectedIcon: Icon(Icons.settings, color: textColor),
+              label: "Settings",
+            ),
 
-            // ==================================================
-            // FOOTER
-            // ==================================================
-
-            const SliverToBoxAdapter(
-
-              child:
-                  Padding(
-
-                padding:
-                    EdgeInsets.all(25),
-
-                child:
-                    Column(
-
-                  children: [
-
-                    Divider(
-                      color:
-                          borderColor,
-                      thickness:
-                          2,
-                    ),
-
-                    SizedBox(
-                        height: 8),
-
-                    Text(
-                      "THE CLEAN NEWS GLOBAL",
-
-                      style:
-                          TextStyle(
-
-                        fontWeight:
-                            FontWeight.w900,
-
-                        letterSpacing:
-                            2,
-
-                        color:
-                            inkColor,
-                      ),
-                    ),
-
-                    SizedBox(
-                        height: 5),
-
-                    Text(
-                      "READ • DISCOVER • UNDERSTAND",
-
-                      style:
-                          TextStyle(
-
-                        fontSize:
-                            9,
-
-                        letterSpacing:
-                            2,
-
-                        color:
-                            brownColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline, color: accentColor),
+              selectedIcon: Icon(Icons.person, color: textColor),
+              label: "Profile",
             ),
           ],
         ),
-      ),
-
-      // ========================================================
-      // BOTTOM NAVIGATION
-      // ========================================================
-
-      bottomNavigationBar:
-
-          NavigationBar(
-
-        backgroundColor:
-            cardColor,
-
-        indicatorColor:
-            fadedColor,
-
-        selectedIndex:
-            bottomIndex,
-
-        onDestinationSelected:
-            (index) {
-
-          setState(() {
-
-            bottomIndex =
-                index;
-
-          });
-
-          if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => SavedPage(
-                  news: news,
-                  bookmarked: bookmarked,
-                  onBookmarkChanged: (articleIndex) {
-                    toggleBookmark(articleIndex);
-                  },
-                ),
-              ),
-            );
-          }
-
-          if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const SettingsPage(),
-              ),
-            );
-          }
-
-          if (index == 3) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ProfilePage(),
-              ),
-            );
-          }
-        },
-
-        destinations: const [
-
-          NavigationDestination(
-
-            icon:
-                Icon(
-              Icons.home_outlined,
-              color:
-                  brownColor,
-            ),
-
-            selectedIcon:
-                Icon(
-              Icons.home,
-              color:
-                  inkColor,
-            ),
-
-            label:
-                "Home",
-          ),
-
-          NavigationDestination(
-
-            icon:
-                Icon(
-              Icons.bookmark_outline,
-              color:
-                  brownColor,
-            ),
-
-            selectedIcon:
-                Icon(
-              Icons.bookmark,
-              color:
-                  inkColor,
-            ),
-
-            label:
-                "Saved",
-          ),
-
-          NavigationDestination(
-
-            icon:
-                Icon(
-              Icons.settings_outlined,
-              color:
-                  brownColor,
-            ),
-
-            selectedIcon:
-                Icon(
-              Icons.settings,
-              color:
-                  inkColor,
-            ),
-
-            label:
-                "Settings",
-          ),
-
-          NavigationDestination(
-
-            icon:
-                Icon(
-              Icons.person_outline,
-              color:
-                  brownColor,
-            ),
-
-            selectedIcon:
-                Icon(
-              Icons.person,
-              color:
-                  inkColor,
-            ),
-
-            label:
-                "Profile",
-          ),
-        ],
       ),
     );
   }

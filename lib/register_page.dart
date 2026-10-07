@@ -3,9 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'services/auth_service.dart';
 import 'home_page.dart';
+import 'settings_controller.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+  final SettingsController settingsController;
+
+  const RegisterPage({super.key, required this.settingsController});
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -14,14 +17,11 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _usernameController =
-      TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
 
-  final TextEditingController _emailController =
-      TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
 
-  final TextEditingController _passwordController =
-      TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   final AuthService _authService = AuthService();
 
@@ -30,20 +30,20 @@ class _RegisterPageState extends State<RegisterPage> {
 
   // ============================================================
   // VINTAGE NEWSPAPER COLORS
+  // SAME COLOR SCHEME AS LOGIN PAGE
   // ============================================================
 
-  static const Color backgroundColor = Color(0xFFF4EBDD);
+  static const Color backgroundColor = Color(0xFFE8D9BA);
   static const Color darkBrown = Color(0xFF2C231D);
-  static const Color mediumBrown = Color(0xFF6B5545);
-  static const Color borderBrown = Color(0xFF9A806B);
-  static const Color buttonBrown = Color(0xFF4A382C);
+  static const Color mediumBrown = Color(0xFF59463A);
+  static const Color borderBrown = Color(0xFF806B57);
+  static const Color buttonBrown = Color(0xFF3A2E26);
 
   // ============================================================
   // REGISTER USER
   // ============================================================
 
   Future<void> _register() async {
-    // Validate the form first
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -53,12 +53,6 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     try {
-      // Create Firebase Authentication account
-      //
-      // AuthService will:
-      // 1. Create email/password account
-      // 2. Get Firebase UID
-      // 3. Save username + email in Firestore
       await _authService.registerWithEmailPassword(
         username: _usernameController.text.trim(),
         email: _emailController.text.trim(),
@@ -67,25 +61,21 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (!mounted) return;
 
-      // Registration successful
-      // Navigate to HomePage
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const HomePage(),
+          builder: (context) =>
+              HomePage(settingsController: widget.settingsController),
         ),
       );
     } catch (e) {
       if (!mounted) return;
 
-      // Show Firebase error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             e.toString().replaceFirst('Exception: ', ''),
-            style: GoogleFonts.libreBaskerville(
-              fontSize: 12,
-            ),
+            style: GoogleFonts.libreBaskerville(fontSize: 12),
           ),
           backgroundColor: darkBrown,
         ),
@@ -111,57 +101,35 @@ class _RegisterPageState extends State<RegisterPage> {
     return InputDecoration(
       hintText: hintText,
 
-      hintStyle: GoogleFonts.libreBaskerville(
-        fontSize: 13,
-        color: mediumBrown,
-      ),
+      hintStyle: GoogleFonts.libreBaskerville(fontSize: 11, color: borderBrown),
 
-      prefixIcon: Icon(
-        icon,
-        color: darkBrown,
-        size: 20,
-      ),
+      prefixIcon: Icon(icon, color: mediumBrown, size: 20),
 
       suffixIcon: suffixIcon,
 
       filled: true,
-      fillColor: const Color(0xFFF8F1E5),
+      fillColor: const Color(0xFFE2D2B3),
 
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 17,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
 
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(
-          color: borderBrown,
-          width: 1,
-        ),
+        borderSide: const BorderSide(color: borderBrown, width: 1),
       ),
 
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(
-          color: darkBrown,
-          width: 1.5,
-        ),
+        borderSide: const BorderSide(color: darkBrown, width: 1.5),
       ),
 
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(
-          color: Colors.redAccent,
-          width: 1,
-        ),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 1),
       ),
 
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(
-          color: Colors.redAccent,
-          width: 1.5,
-        ),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
       ),
     );
   }
@@ -172,9 +140,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   TextStyle _labelStyle() {
     return GoogleFonts.libreBaskerville(
-      fontSize: 13,
+      fontSize: 11,
       fontWeight: FontWeight.bold,
-      color: darkBrown,
+      color: mediumBrown,
     );
   }
 
@@ -203,7 +171,6 @@ class _RegisterPageState extends State<RegisterPage> {
       // ========================================================
       // APP BAR
       // ========================================================
-
       appBar: AppBar(
         backgroundColor: backgroundColor,
         foregroundColor: darkBrown,
@@ -225,13 +192,9 @@ class _RegisterPageState extends State<RegisterPage> {
       // ========================================================
       // BODY
       // ========================================================
-
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 20,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
 
           child: Form(
             key: _formKey,
@@ -239,28 +202,23 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 // ==================================================
                 // TOP NEWSPAPER LINE
                 // ==================================================
 
-                const Divider(
-                  color: darkBrown,
-                  thickness: 1.2,
-                ),
+                const Divider(color: darkBrown, thickness: 1.2),
 
                 const SizedBox(height: 18),
 
                 // ==================================================
                 // NEWSPAPER NAME
                 // ==================================================
-
                 Center(
                   child: Text(
                     'CLEAN NEWS GLOBAL',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.libreBaskerville(
-                      fontSize: 13,
+                      fontSize: 11,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2,
                       color: darkBrown,
@@ -274,7 +232,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: Text(
                     'EST. 2026  •  INDEPENDENT NEWS',
                     style: GoogleFonts.libreBaskerville(
-                      fontSize: 9,
+                      fontSize: 8,
                       letterSpacing: 1.2,
                       color: mediumBrown,
                     ),
@@ -283,23 +241,19 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 const SizedBox(height: 18),
 
-                const Divider(
-                  color: darkBrown,
-                  thickness: 1.2,
-                ),
+                const Divider(color: darkBrown, thickness: 1.2),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
 
                 // ==================================================
                 // MAIN HEADING
                 // ==================================================
-
                 Center(
                   child: Text(
                     'Create Your Reader Account',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.libreBaskerville(
-                      fontSize: 25,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: darkBrown,
                       height: 1.3,
@@ -314,8 +268,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     'Join Clean News Global and stay informed.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.libreBaskerville(
-                      fontSize: 13,
-                      color: darkBrown,
+                      fontSize: 11,
+                      color: mediumBrown,
                       height: 1.6,
                     ),
                   ),
@@ -324,186 +278,225 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 30),
 
                 // ==================================================
-                // USERNAME
+                // LARGE LOGIN-STYLE FORM CARD
                 // ==================================================
-
-                Text(
-                  'USERNAME',
-                  style: _labelStyle(),
-                ),
-
-                const SizedBox(height: 8),
-
-                TextFormField(
-                  controller: _usernameController,
-
-                  keyboardType: TextInputType.name,
-
-                  style: GoogleFonts.libreBaskerville(
-                    fontSize: 13,
-                    color: darkBrown,
-                  ),
-
-                  decoration: _fieldDecoration(
-                    hintText: 'Enter your username',
-                    icon: Icons.person_outline,
-                  ),
-
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter a username';
-                    }
-
-                    if (value.trim().length < 3) {
-                      return 'Username must be at least 3 characters';
-                    }
-
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 20),
-
-                // ==================================================
-                // EMAIL
-                // ==================================================
-
-                Text(
-                  'EMAIL ADDRESS',
-                  style: _labelStyle(),
-                ),
-
-                const SizedBox(height: 8),
-
-                TextFormField(
-                  controller: _emailController,
-
-                  keyboardType: TextInputType.emailAddress,
-
-                  style: GoogleFonts.libreBaskerville(
-                    fontSize: 13,
-                    color: darkBrown,
-                  ),
-
-                  decoration: _fieldDecoration(
-                    hintText: 'Enter your email',
-                    icon: Icons.email_outlined,
-                  ),
-
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your email';
-                    }
-
-                    if (!value.contains('@') ||
-                        !value.contains('.')) {
-                      return 'Please enter a valid email';
-                    }
-
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 20),
-
-                // ==================================================
-                // PASSWORD
-                // ==================================================
-
-                Text(
-                  'PASSWORD',
-                  style: _labelStyle(),
-                ),
-
-                const SizedBox(height: 8),
-
-                TextFormField(
-                  controller: _passwordController,
-
-                  obscureText: _obscurePassword,
-
-                  style: GoogleFonts.libreBaskerville(
-                    fontSize: 13,
-                    color: darkBrown,
-                  ),
-
-                  decoration: _fieldDecoration(
-                    hintText: 'Create a password',
-                    icon: Icons.lock_outline,
-
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        color: darkBrown,
-                        size: 20,
-                      ),
-
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword =
-                              !_obscurePassword;
-                        });
-                      },
-                    ),
-                  ),
-
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a password';
-                    }
-
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 28),
-
-                // ==================================================
-                // CREATE ACCOUNT BUTTON
-                // ==================================================
-
-                SizedBox(
+                Container(
                   width: double.infinity,
-                  height: 52,
 
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: buttonBrown,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
+                  padding: const EdgeInsets.all(22),
 
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFE2C7),
+                    border: Border.all(color: borderBrown, width: 1.2),
+                  ),
 
-                    onPressed: _isLoading ? null : _register,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ============================================
+                      // CARD TITLE
+                      // ============================================
 
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(height: 1, color: borderBrown),
+                          ),
 
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Text(
-                            'CREATE ACCOUNT',
-                            style: GoogleFonts.libreBaskerville(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
-                              color: Colors.white,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              'READER REGISTRATION',
+                              style: GoogleFonts.libreBaskerville(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                                color: darkBrown,
+                              ),
                             ),
                           ),
+
+                          Expanded(
+                            child: Container(height: 1, color: borderBrown),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // ============================================
+                      // USERNAME
+                      // ============================================
+                      Text('USERNAME', style: _labelStyle()),
+
+                      const SizedBox(height: 8),
+
+                      TextFormField(
+                        controller: _usernameController,
+
+                        keyboardType: TextInputType.name,
+
+                        style: GoogleFonts.libreBaskerville(
+                          fontSize: 11,
+                          color: darkBrown,
+                        ),
+
+                        decoration: _fieldDecoration(
+                          hintText: 'Enter your username',
+                          icon: Icons.person_outline,
+                        ),
+
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter a username';
+                          }
+
+                          if (value.trim().length < 3) {
+                            return 'Username must be at least 3 characters';
+                          }
+
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // ============================================
+                      // EMAIL
+                      // ============================================
+                      Text('EMAIL ADDRESS', style: _labelStyle()),
+
+                      const SizedBox(height: 8),
+
+                      TextFormField(
+                        controller: _emailController,
+
+                        keyboardType: TextInputType.emailAddress,
+
+                        style: GoogleFonts.libreBaskerville(
+                          fontSize: 11,
+                          color: darkBrown,
+                        ),
+
+                        decoration: _fieldDecoration(
+                          hintText: 'Enter your email',
+                          icon: Icons.email_outlined,
+                        ),
+
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter your email';
+                          }
+
+                          if (!value.contains('@') || !value.contains('.')) {
+                            return 'Please enter a valid email';
+                          }
+
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // ============================================
+                      // PASSWORD
+                      // ============================================
+                      Text('PASSWORD', style: _labelStyle()),
+
+                      const SizedBox(height: 8),
+
+                      TextFormField(
+                        controller: _passwordController,
+
+                        obscureText: _obscurePassword,
+
+                        onEditingComplete: () {
+                          _register();
+                        },
+
+                        style: GoogleFonts.libreBaskerville(
+                          fontSize: 11,
+                          color: darkBrown,
+                        ),
+
+                        decoration: _fieldDecoration(
+                          hintText: 'Create a password',
+                          icon: Icons.lock_outline,
+
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              color: mediumBrown,
+                              size: 20,
+                            ),
+
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                        ),
+
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a password';
+                          }
+
+                          if (value.length < 6) {
+                            return 'Password must be at least 6 characters';
+                          }
+
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 28),
+
+                      // ============================================
+                      // CREATE ACCOUNT BUTTON
+                      // ============================================
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: buttonBrown,
+                            foregroundColor: const Color(0xFFF3E8D0),
+                            elevation: 0,
+
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+
+                          onPressed: _isLoading ? null : _register,
+
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Color(0xFFF3E8D0),
+                                  ),
+                                )
+                              : Text(
+                                  'CREATE ACCOUNT',
+                                  style: GoogleFonts.libreBaskerville(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1,
+                                    color: const Color(0xFFF3E8D0),
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
@@ -512,7 +505,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 // ==================================================
                 // BACK TO LOGIN
                 // ==================================================
-
                 Center(
                   child: TextButton(
                     onPressed: _isLoading
@@ -540,11 +532,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 // ==================================================
                 // BOTTOM NEWSPAPER LINE
                 // ==================================================
-
-                const Divider(
-                  color: darkBrown,
-                  thickness: 1,
-                ),
+                const Divider(color: borderBrown, thickness: 1),
 
                 const SizedBox(height: 8),
 
@@ -554,7 +542,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     textAlign: TextAlign.center,
 
                     style: GoogleFonts.libreBaskerville(
-                      fontSize: 8,
+                      fontSize: 7,
                       letterSpacing: 1,
                       color: mediumBrown,
                     ),
