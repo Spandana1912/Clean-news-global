@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'services/auth_service.dart';
+<<<<<<< HEAD
 import 'email_verification_page.dart';
+=======
+import 'home_page.dart';
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
 import 'settings_controller.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -18,10 +22,17 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _usernameController = TextEditingController();
+<<<<<<< HEAD
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+=======
+
+  final TextEditingController _emailController = TextEditingController();
+
+  final TextEditingController _passwordController = TextEditingController();
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
 
   final AuthService _authService = AuthService();
 
@@ -61,6 +72,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (!mounted) return;
 
+<<<<<<< HEAD
       // Registration completed and the verification request was accepted.
       Navigator.pushReplacement(
         context,
@@ -68,11 +80,19 @@ class _RegisterPageState extends State<RegisterPage> {
           builder: (_) => EmailVerificationPage(
             settingsController: widget.settingsController,
           ),
+=======
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              HomePage(settingsController: widget.settingsController),
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
         ),
       );
     } catch (e) {
       if (!mounted) return;
 
+<<<<<<< HEAD
       final message = e.toString().replaceFirst('Exception: ', '');
       final user = _authService.currentUser;
 
@@ -126,6 +146,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     MaterialPageRoute(
                       builder: (_) => EmailVerificationPage(
             settingsController: widget.settingsController,
+=======
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+            style: GoogleFonts.libreBaskerville(fontSize: 12),
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
           ),
                     ),
                   );
@@ -169,18 +196,32 @@ class _RegisterPageState extends State<RegisterPage> {
   }) {
     return InputDecoration(
       hintText: hintText,
+<<<<<<< HEAD
       hintStyle: GoogleFonts.libreBaskerville(
         fontSize: 11,
         color: borderBrown,
       ),
       prefixIcon: Icon(icon, color: mediumBrown, size: 20),
+=======
+
+      hintStyle: GoogleFonts.libreBaskerville(fontSize: 11, color: borderBrown),
+
+      prefixIcon: Icon(icon, color: mediumBrown, size: 20),
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: const Color(0xFFE2D2B3),
+<<<<<<< HEAD
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 16,
         vertical: 17,
       ),
+=======
+
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: borderBrown, width: 1),
@@ -195,10 +236,7 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(
-          color: Colors.redAccent,
-          width: 1.5,
-        ),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
       ),
     );
   }
@@ -241,7 +279,6 @@ class _RegisterPageState extends State<RegisterPage> {
       // ========================================================
       // APP BAR
       // ========================================================
-
       appBar: AppBar(
         backgroundColor: backgroundColor,
         foregroundColor: darkBrown,
@@ -261,18 +298,26 @@ class _RegisterPageState extends State<RegisterPage> {
       // ========================================================
       // BODY
       // ========================================================
-
       body: SafeArea(
         child: SingleChildScrollView(
+<<<<<<< HEAD
           padding: const EdgeInsets.symmetric(
             horizontal: 24,
             vertical: 20,
           ),
+=======
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+<<<<<<< HEAD
+=======
+                // ==================================================
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                 // TOP NEWSPAPER LINE
 
                 const Divider(color: darkBrown, thickness: 1.2),
@@ -280,7 +325,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 18),
 
                 // NEWSPAPER NAME
+<<<<<<< HEAD
 
+=======
+                // ==================================================
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                 Center(
                   child: Text(
                     'CLEAN NEWS GLOBAL',
@@ -314,7 +363,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 20),
 
                 // MAIN HEADING
+<<<<<<< HEAD
 
+=======
+                // ==================================================
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                 Center(
                   child: Text(
                     'Create Your Reader Account',
@@ -345,6 +398,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 30),
 
                 // ==================================================
+<<<<<<< HEAD
                 // REGISTRATION FORM CARD
                 // ==================================================
 
@@ -390,29 +444,91 @@ class _RegisterPageState extends State<RegisterPage> {
                               height: 1,
                               color: borderBrown,
                             ),
+=======
+                // LARGE LOGIN-STYLE FORM CARD
+                // ==================================================
+                Container(
+                  width: double.infinity,
+
+                  padding: const EdgeInsets.all(22),
+
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFE2C7),
+                    border: Border.all(color: borderBrown, width: 1.2),
+                  ),
+
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ============================================
+                      // CARD TITLE
+                      // ============================================
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(height: 1, color: borderBrown),
+                          ),
+
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              'READER REGISTRATION',
+                              style: GoogleFonts.libreBaskerville(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                                color: darkBrown,
+                              ),
+                            ),
+                          ),
+
+                          Expanded(
+                            child: Container(height: 1, color: borderBrown),
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                           ),
                         ],
                       ),
 
                       const SizedBox(height: 24),
 
+<<<<<<< HEAD
                       // USERNAME
 
+=======
+                      // ============================================
+                      // USERNAME
+                      // ============================================
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                       Text('USERNAME', style: _labelStyle()),
 
                       const SizedBox(height: 8),
 
                       TextFormField(
                         controller: _usernameController,
+<<<<<<< HEAD
                         keyboardType: TextInputType.name,
+=======
+
+                        keyboardType: TextInputType.name,
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                         style: GoogleFonts.libreBaskerville(
                           fontSize: 11,
                           color: darkBrown,
                         ),
+<<<<<<< HEAD
+=======
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                         decoration: _fieldDecoration(
                           hintText: 'Enter your username',
                           icon: Icons.person_outline,
                         ),
+<<<<<<< HEAD
+=======
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return 'Please enter a username';
@@ -428,23 +544,40 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       const SizedBox(height: 20),
 
+<<<<<<< HEAD
                       // EMAIL
 
+=======
+                      // ============================================
+                      // EMAIL
+                      // ============================================
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                       Text('EMAIL ADDRESS', style: _labelStyle()),
 
                       const SizedBox(height: 8),
 
                       TextFormField(
                         controller: _emailController,
+<<<<<<< HEAD
                         keyboardType: TextInputType.emailAddress,
+=======
+
+                        keyboardType: TextInputType.emailAddress,
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                         style: GoogleFonts.libreBaskerville(
                           fontSize: 11,
                           color: darkBrown,
                         ),
+<<<<<<< HEAD
+=======
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                         decoration: _fieldDecoration(
                           hintText: 'Enter your email',
                           icon: Icons.email_outlined,
                         ),
+<<<<<<< HEAD
                         validator: (value) {
                           final email = value?.trim() ?? '';
 
@@ -456,6 +589,15 @@ class _RegisterPageState extends State<RegisterPage> {
                               RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
                           if (!emailPattern.hasMatch(email)) {
+=======
+
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter your email';
+                          }
+
+                          if (!value.contains('@') || !value.contains('.')) {
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                             return 'Please enter a valid email';
                           }
 
@@ -465,22 +607,46 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       const SizedBox(height: 20),
 
+<<<<<<< HEAD
                       // PASSWORD
 
+=======
+                      // ============================================
+                      // PASSWORD
+                      // ============================================
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                       Text('PASSWORD', style: _labelStyle()),
 
                       const SizedBox(height: 8),
 
                       TextFormField(
                         controller: _passwordController,
+<<<<<<< HEAD
                         obscureText: _obscurePassword,
+=======
+
+                        obscureText: _obscurePassword,
+
+                        onEditingComplete: () {
+                          _register();
+                        },
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                         style: GoogleFonts.libreBaskerville(
                           fontSize: 11,
                           color: darkBrown,
                         ),
+<<<<<<< HEAD
                         decoration: _fieldDecoration(
                           hintText: 'Create a password',
                           icon: Icons.lock_outline,
+=======
+
+                        decoration: _fieldDecoration(
+                          hintText: 'Create a password',
+                          icon: Icons.lock_outline,
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
@@ -489,6 +655,10 @@ class _RegisterPageState extends State<RegisterPage> {
                               color: mediumBrown,
                               size: 20,
                             ),
+<<<<<<< HEAD
+=======
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                             onPressed: () {
                               setState(() {
                                 _obscurePassword = !_obscurePassword;
@@ -496,11 +666,16 @@ class _RegisterPageState extends State<RegisterPage> {
                             },
                           ),
                         ),
+<<<<<<< HEAD
+=======
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter a password';
                           }
 
+<<<<<<< HEAD
                           return AuthService.validatePassword(value);
                         },
                       ),
@@ -535,6 +710,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
                           if (value != _passwordController.text) {
                             return 'Passwords do not match';
+=======
+                          if (value.length < 6) {
+                            return 'Password must be at least 6 characters';
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                           }
 
                           return null;
@@ -543,25 +722,49 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       const SizedBox(height: 28),
 
+<<<<<<< HEAD
                       // CREATE ACCOUNT BUTTON
 
                       SizedBox(
                         width: double.infinity,
                         height: 52,
+=======
+                      // ============================================
+                      // CREATE ACCOUNT BUTTON
+                      // ============================================
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: buttonBrown,
                             foregroundColor: const Color(0xFFF3E8D0),
                             elevation: 0,
+<<<<<<< HEAD
+=======
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
+<<<<<<< HEAD
                           onPressed: _isLoading ? null : _register,
+=======
+
+                          onPressed: _isLoading ? null : _register,
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                           child: _isLoading
                               ? const SizedBox(
                                   width: 22,
                                   height: 22,
+<<<<<<< HEAD
+=======
+
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     color: Color(0xFFF3E8D0),
@@ -585,7 +788,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 18),
 
                 // BACK TO LOGIN
+<<<<<<< HEAD
 
+=======
+                // ==================================================
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                 Center(
                   child: TextButton(
                     onPressed: _isLoading
@@ -609,11 +816,16 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 12),
 
                 // BOTTOM NEWSPAPER LINE
+<<<<<<< HEAD
 
                 const Divider(
                   color: borderBrown,
                   thickness: 1,
                 ),
+=======
+                // ==================================================
+                const Divider(color: borderBrown, thickness: 1),
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
 
                 const SizedBox(height: 8),
 

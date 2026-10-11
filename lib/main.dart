@@ -18,9 +18,7 @@ void main() async {
   await dotenv.load(fileName: '.env');
 
   // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Firebase App Check
   await FirebaseAppCheck.instance.activate(
@@ -67,7 +65,11 @@ class NewsApp extends StatelessWidget {
             );
           },
 
+<<<<<<< HEAD
           // Authentication and email-verification gate
+=======
+          // Authentication
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
           home: AuthGate(settingsController: settingsController),
         );
       },
@@ -97,6 +99,7 @@ class AuthGate extends StatelessWidget {
           );
         }
 
+<<<<<<< HEAD
         final user = snapshot.data;
 
         // No signed-in user.
@@ -117,6 +120,15 @@ class AuthGate extends StatelessWidget {
         return HomePage(
           settingsController: settingsController,
         );
+=======
+        // User is already logged in
+        if (snapshot.hasData) {
+          return HomePage(settingsController: settingsController);
+        }
+
+        // No logged-in user
+        return LoginPage(settingsController: settingsController);
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
       },
     );
   }

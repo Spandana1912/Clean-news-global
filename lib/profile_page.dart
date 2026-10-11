@@ -384,4 +384,8 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6

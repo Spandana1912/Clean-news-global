@@ -9,7 +9,10 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'models/article.dart';
 import 'services/news_api_service.dart';
+<<<<<<< HEAD
 import 'services/ai_summary_service.dart';
+=======
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
 import 'services/firestore_service.dart';
 import 'profile_page.dart';
 import 'saved_page.dart';
@@ -532,6 +535,7 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(
                   color: accentColor,
                   fontWeight: FontWeight.bold,
+<<<<<<< HEAD
                 ),
               ),
             ),
@@ -656,6 +660,8 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(
                   color: accentColor,
                   fontWeight: FontWeight.bold,
+=======
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                 ),
               ),
             ),
@@ -663,6 +669,26 @@ class _HomePageState extends State<HomePage> {
         );
       },
     );
+  }
+
+  String _getFallbackImage() {
+    switch (categories[selectedCategory].toLowerCase()) {
+      case 'business':
+        return 'https://images.unsplash.com/39/lIZrwvbeRuuzqOoWJUEn_Photoaday_CSD%20(1%20of%201)-5.jpg?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA==';
+      case 'sports':
+        return 'https://images.pexels.com/photos/9376460/pexels-photo-9376460.jpeg?h=1000&w=1500&fit=crop';
+      case 'technology':
+        return 'https://images.unsplash.com/photo-1644088379091-d574269d422f?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dGVjaG5vbG9neXxlbnwwfHwwfHx8MA==';
+      case 'health':
+        return 'https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bWVkaWNhbCUyMGFzc2lzdGFuY2V8ZW58MHx8MHx8fDA=';
+      case 'science':
+        return 'https://images.unsplash.com/photo-1628595351029-c2bf17511435?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2NpZW5jZXxlbnwwfHwwfHx8MA==';
+      case 'entertainment':
+        return 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA==';
+      case 'all':
+      default:
+        return 'https://images.unsplash.com/photo-1521295121783-8a321d551ad2?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Z2xvYmV8ZW58MHx8MHx8fDA=';
+    }
   }
 
   // ==========================================================
@@ -867,6 +893,7 @@ class _HomePageState extends State<HomePage> {
 
                   const SizedBox(height: 8),
 
+<<<<<<< HEAD
                   // AI SUMMARY BUTTON
                   Align(
                     alignment: Alignment.centerLeft,
@@ -889,6 +916,8 @@ class _HomePageState extends State<HomePage> {
 
                   const SizedBox(height: 4),
 
+=======
+>>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
                   // ACTIONS
                   Row(
                     children: [
