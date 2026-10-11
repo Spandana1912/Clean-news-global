@@ -6,8 +6,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'firebase_options.dart';
 import 'login_page.dart';
+import 'email_verification_page.dart';
 import 'home_page.dart';
 import 'theme.dart';
+import 'settings_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,63 +28,49 @@ void main() async {
     providerAndroid: const AndroidDebugProvider(),
   );
 
-  runApp(const NewsApp());
+  // Create settings controller
+  final settingsController = SettingsController();
+
+  runApp(NewsApp(settingsController: settingsController));
 }
 
 class NewsApp extends StatelessWidget {
-  const NewsApp({super.key});
+  final SettingsController settingsController;
+
+  const NewsApp({super.key, required this.settingsController});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: "The Clean News",
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: paperColor,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: brownColor,
-          brightness: Brightness.light,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: paperColor,
-          foregroundColor: inkColor,
-          elevation: 0,
-          centerTitle: false,
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: cardColor,
-          labelStyle: const TextStyle(
-            color: brownColor,
-          ),
-          hintStyle: const TextStyle(
-            color: Color(0xFF806D59),
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.zero,
-            borderSide: BorderSide(
-              color: borderColor,
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.zero,
-            borderSide: BorderSide(
-              color: borderColor,
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.zero,
-            borderSide: BorderSide(
-              color: brownColor,
-              width: 2,
-            ),
-          ),
-        ),
-      ),
+    return AnimatedBuilder(
+      animation: settingsController,
+      builder: (context, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: "The Clean News",
 
-      // Auth Gate
-      home: const AuthGate(),
+          // LIGHT THEME
+          theme: lightTheme,
+          darkTheme: darkTheme,
+
+          // Change theme when Dark Mode is enabled
+          themeMode: settingsController.darkMode
+              ? ThemeMode.dark
+              : ThemeMode.light,
+
+          // Change text size throughout the app
+          builder: (context, child) {
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(settingsController.textScale),
+              ),
+              child: child!,
+            );
+          },
+
+          // Authentication and email-verification gate
+          home: AuthGate(settingsController: settingsController),
+        );
+      },
     );
   }
 }
@@ -92,29 +80,43 @@ class NewsApp extends StatelessWidget {
 // ============================================================
 
 class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
+  final SettingsController settingsController;
+
+  const AuthGate({super.key, required this.settingsController});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
+      // userChanges also reacts when the Firebase user is reloaded.
+      stream: FirebaseAuth.instance.userChanges(),
       builder: (context, snapshot) {
-        // Firebase is checking the current authentication state
+        // Firebase is checking the current authentication state.
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        // User is already logged in
-        if (snapshot.hasData) {
-          return const HomePage();
+        final user = snapshot.data;
+
+        // No signed-in user.
+        if (user == null) {
+          return LoginPage(
+            settingsController: settingsController,
+          );
         }
 
-        // No logged-in user
-        return const LoginPage();
+        // Signed in, but email verification is incomplete.
+        if (!user.emailVerified) {
+          return EmailVerificationPage(
+            settingsController: settingsController,
+          );
+        }
+
+        // Only verified users can access the news feed.
+        return HomePage(
+          settingsController: settingsController,
+        );
       },
     );
   }
