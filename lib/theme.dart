@@ -124,8 +124,4 @@ ThemeData darkTheme = ThemeData(
       borderSide: BorderSide(color: darkBrownColor, width: 2),
     ),
   ),
-<<<<<<< HEAD
 );
-=======
-);
->>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6

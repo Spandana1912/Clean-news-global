@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:newsapp/main.dart';
 import 'package:newsapp/settings_controller.dart';
@@ -7,7 +8,10 @@ void main() {
     final settingsController = SettingsController();
 
     await tester.pumpWidget(
-      NewsApp(settingsController: settingsController),
+      NewsApp(
+        settingsController: settingsController,
+        home: const Scaffold(body: Text('News app')),
+      ),
     );
 
     // Verify that the app builds and displays its MaterialApp.

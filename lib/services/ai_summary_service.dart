@@ -1,17 +1,16 @@
-
 import 'package:firebase_ai/firebase_ai.dart';
 
 import '../models/article.dart';
 
 class AiSummaryService {
   AiSummaryService()
-      : _articleModel = FirebaseAI.googleAI().generativeModel(
-          model: 'gemini-3.8-flash',
-          tools: [Tool.urlContext()],
-        ),
-        _excerptModel = FirebaseAI.googleAI().generativeModel(
-          model: 'gemini-3.8-flash',
-        );
+    : _articleModel = FirebaseAI.googleAI().generativeModel(
+        model: 'gemini-3.8-flash',
+        tools: [Tool.urlContext()],
+      ),
+      _excerptModel = FirebaseAI.googleAI().generativeModel(
+        model: 'gemini-3.8-flash',
+      );
 
   final GenerativeModel _articleModel;
   final GenerativeModel _excerptModel;
@@ -19,7 +18,8 @@ class AiSummaryService {
   Future<String> summarizeArticle(Article article) async {
     final uri = Uri.tryParse(article.articleUrl);
 
-    final hasPublicUrl = uri != null &&
+    final hasPublicUrl =
+        uri != null &&
         (uri.scheme == 'https' || uri.scheme == 'http') &&
         uri.host.isNotEmpty;
 
@@ -28,7 +28,8 @@ class AiSummaryService {
     final publisher = article.source.trim();
     final publishedAt = article.publishedAt.trim();
 
-    final usableDescription = description.isNotEmpty &&
+    final usableDescription =
+        description.isNotEmpty &&
         description.toLowerCase() != 'no description available';
 
     if (title.isEmpty) {
@@ -36,9 +37,12 @@ class AiSummaryService {
     }
 
     // First attempt: ask Gemini to inspect the publisher's URL.
+    Object? articleRequestError;
+
     if (hasPublicUrl) {
       try {
-        final prompt = '''
+        final prompt =
+            '''
 You are the neutral news editor for Clean News Global.
 
 Analyze this news story using the URL context tool to inspect the
@@ -90,12 +94,11 @@ if the page contains useful factual information.
 
         final result = response.text?.trim();
 
-        if (result != null && _looksLikeUsefulSummary(result)) {
+        if (result != null && _isSubstantiveSummary(result)) {
           return result;
         }
       } catch (e) {
-        // Continue to the excerpt-based attempt below.
-        // Do not expose the first failure as the final summary.
+        articleRequestError = e;
       }
     }
 
@@ -110,7 +113,8 @@ if the page contains useful factual information.
     }
 
     try {
-      final prompt = '''
+      final prompt =
+          '''
 You are the neutral news summarizer for Clean News Global.
 
 Create the most useful summary possible using ONLY the metadata below.
@@ -156,32 +160,32 @@ Make this informative and concise, not a generic error message.
 
       final result = response.text?.trim();
 
-      if (result == null || !_looksLikeUsefulSummary(result)) {
+      if (result == null || !_isSubstantiveSummary(result)) {
         throw Exception('Gemini returned an empty or incomplete summary.');
       }
 
       return result;
     } catch (e) {
+      final detail = _describeError(e);
+      final articleDetail = articleRequestError == null
+          ? ''
+          : ' URL reading also failed: ${_describeError(articleRequestError!)}';
+
       throw Exception(
-        'Gemini could not generate the summary. Please try again '
-        'or read the original publisher article.',
+        'Gemini could not generate the summary. $detail$articleDetail '
+        'Check that Gemini is enabled for this Firebase project and try again.',
       );
     }
   }
 
-  bool _looksLikeUsefulSummary(String text) {
-    final normalized = text.toLowerCase();
+  bool _isSubstantiveSummary(String text) {
+    return text.trim().length >= 100;
+  }
 
-    if (text.trim().length < 100) return false;
+  String _describeError(Object error) {
+    final message = error.toString().replaceFirst(RegExp(r'^[^:]+:\s*'), '');
 
-    // Reject the exact kind of fallback shown in the screenshot.
-    if (normalized.contains(
-      'gemini could not complete the summary request',
-    )) {
-      return false;
-    }
-
-    return normalized.contains('overview') &&
-        normalized.contains('key points');
+    if (message.length <= 240) return message;
+    return '${message.substring(0, 237)}...';
   }
 }

@@ -24,11 +24,8 @@ class NewsApiService {
       if (category != null) 'category': category,
     };
 
-    final uri = Uri.parse(
-      '$_baseUrl/top-headlines',
-    ).replace(
-      queryParameters: queryParameters,
-    );
+    final uri = Uri.parse('$_baseUrl/top-headlines')
+        .replace(queryParameters: queryParameters);
 
     final response = await http.get(uri);
 
@@ -41,31 +38,23 @@ class NewsApiService {
     final data = jsonDecode(response.body);
 
     if (data['status'] != 'ok') {
-      throw Exception(
-        data['message'] ?? 'Failed to load news.',
-      );
+      throw Exception(data['message'] ?? 'Failed to load news.');
     }
 
     final List<dynamic> articlesJson = data['articles'] ?? [];
 
-    return articlesJson
-        .map((json) => Article.fromJson(json))
-        .toList();
+    return articlesJson.map((json) => Article.fromJson(json)).toList();
   }
 
   // Fetch India-focused news using the Everything endpoint.
   // This is used instead of country=in because it is more reliable
   // across NewsAPI plans/configurations.
-  Future<List<Article>> getIndiaNews({
-    String? category,
-  }) async {
+  Future<List<Article>> getIndiaNews({String? category}) async {
     if (_apiKey.isEmpty) {
       throw Exception('News API key not found.');
     }
 
-    final query = category == null
-        ? 'India'
-        : 'India AND $category';
+    final query = category == null ? 'India' : 'India AND $category';
 
     final queryParameters = {
       'apiKey': _apiKey,
@@ -75,11 +64,8 @@ class NewsApiService {
       'pageSize': '30',
     };
 
-    final uri = Uri.parse(
-      '$_baseUrl/everything',
-    ).replace(
-      queryParameters: queryParameters,
-    );
+    final uri = Uri.parse('$_baseUrl/everything')
+        .replace(queryParameters: queryParameters);
 
     final response = await http.get(uri);
 
@@ -92,23 +78,17 @@ class NewsApiService {
     final data = jsonDecode(response.body);
 
     if (data['status'] != 'ok') {
-      throw Exception(
-        data['message'] ?? 'Failed to load India news.',
-      );
+      throw Exception(data['message'] ?? 'Failed to load India news.');
     }
 
     final List<dynamic> articlesJson = data['articles'] ?? [];
 
-    return articlesJson
-        .map((json) => Article.fromJson(json))
-        .toList();
+    return articlesJson.map((json) => Article.fromJson(json)).toList();
   }
 
   // Fetch broad English-language international/world news.
   // Used when the user selects the INTERNATIONAL region.
-  Future<List<Article>> getInternationalNews({
-    String? category,
-  }) async {
+  Future<List<Article>> getInternationalNews({String? category}) async {
     if (_apiKey.isEmpty) {
       throw Exception('News API key not found.');
     }
@@ -125,11 +105,8 @@ class NewsApiService {
       'pageSize': '30',
     };
 
-    final uri = Uri.parse(
-      '$_baseUrl/everything',
-    ).replace(
-      queryParameters: queryParameters,
-    );
+    final uri = Uri.parse('$_baseUrl/everything')
+        .replace(queryParameters: queryParameters);
 
     final response = await http.get(uri);
 
@@ -142,15 +119,11 @@ class NewsApiService {
     final data = jsonDecode(response.body);
 
     if (data['status'] != 'ok') {
-      throw Exception(
-        data['message'] ?? 'Failed to load international news.',
-      );
+      throw Exception(data['message'] ?? 'Failed to load international news.');
     }
 
     final List<dynamic> articlesJson = data['articles'] ?? [];
 
-    return articlesJson
-        .map((json) => Article.fromJson(json))
-        .toList();
+    return articlesJson.map((json) => Article.fromJson(json)).toList();
   }
 }

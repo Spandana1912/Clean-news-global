@@ -1,12 +1,10 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'firestore_service.dart';
 
 class AuthService {
-  AuthService({FirebaseAuth? auth})
-      : _auth = auth ?? FirebaseAuth.instance;
+  AuthService({FirebaseAuth? auth}) : _auth = auth ?? FirebaseAuth.instance;
 
   final FirebaseAuth _auth;
   final FirestoreService _firestoreService = FirestoreService();
@@ -75,9 +73,7 @@ class AuthService {
       final user = credential.user;
 
       if (user == null) {
-        throw Exception(
-          'Firebase created no user account. Please try again.',
-        );
+        throw Exception('Firebase created no user account. Please try again.');
       }
 
       // 2. Request verification immediately.
@@ -153,10 +149,7 @@ class AuthService {
 
     // Email login
     if (value.contains('@')) {
-      return loginWithEmailPassword(
-        email: value,
-        password: password,
-      );
+      return loginWithEmailPassword(email: value, password: password);
     }
 
     // Username login: resolve username to its registered email.
@@ -169,10 +162,7 @@ class AuthService {
       );
     }
 
-    return loginWithEmailPassword(
-      email: email,
-      password: password,
-    );
+    return loginWithEmailPassword(email: email, password: password);
   }
 
   // ------------------------------------------------------------
@@ -186,9 +176,7 @@ class AuthService {
     final user = _auth.currentUser;
 
     if (user == null) {
-      throw Exception(
-        'You are not signed in. Please sign in again.',
-      );
+      throw Exception('You are not signed in. Please sign in again.');
     }
 
     if (user.emailVerified) {
@@ -210,20 +198,18 @@ class AuthService {
   // CHECK VERIFICATION STATUS
   // ------------------------------------------------------------
 
- 
-Future<bool> refreshEmailVerification() async {
-  final user = _auth.currentUser;
+  Future<bool> refreshEmailVerification() async {
+    final user = _auth.currentUser;
 
-  if (user == null) return false;
+    if (user == null) return false;
 
-  await user.reload();
+    await user.reload();
 
-  // Get the refreshed Firebase user after reload.
-  final refreshedUser = _auth.currentUser;
+    // Get the refreshed Firebase user after reload.
+    final refreshedUser = _auth.currentUser;
 
-  return refreshedUser?.emailVerified ?? false;
-}
-
+    return refreshedUser?.emailVerified ?? false;
+  }
 
   // ------------------------------------------------------------
   // SEND PASSWORD RESET EMAIL
@@ -235,9 +221,7 @@ Future<bool> refreshEmailVerification() async {
     }
 
     try {
-      await _auth.sendPasswordResetEmail(
-        email: email.trim(),
-      );
+      await _auth.sendPasswordResetEmail(email: email.trim());
     } on FirebaseAuthException catch (e) {
       throw Exception(_authMessage(e.code));
     }
@@ -261,9 +245,7 @@ Future<bool> refreshEmailVerification() async {
     final email = user?.email;
 
     if (user == null || email == null) {
-      throw Exception(
-        'Please sign in again before changing your password.',
-      );
+      throw Exception('Please sign in again before changing your password.');
     }
 
     try {

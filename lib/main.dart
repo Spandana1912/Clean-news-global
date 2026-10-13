@@ -34,8 +34,9 @@ void main() async {
 
 class NewsApp extends StatelessWidget {
   final SettingsController settingsController;
+  final Widget? home;
 
-  const NewsApp({super.key, required this.settingsController});
+  const NewsApp({super.key, required this.settingsController, this.home});
 
   @override
   Widget build(BuildContext context) {
@@ -65,12 +66,8 @@ class NewsApp extends StatelessWidget {
             );
           },
 
-<<<<<<< HEAD
           // Authentication and email-verification gate
-=======
-          // Authentication
->>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
-          home: AuthGate(settingsController: settingsController),
+          home: home ?? AuthGate(settingsController: settingsController),
         );
       },
     );
@@ -99,36 +96,20 @@ class AuthGate extends StatelessWidget {
           );
         }
 
-<<<<<<< HEAD
         final user = snapshot.data;
 
         // No signed-in user.
         if (user == null) {
-          return LoginPage(
-            settingsController: settingsController,
-          );
+          return LoginPage(settingsController: settingsController);
         }
 
         // Signed in, but email verification is incomplete.
         if (!user.emailVerified) {
-          return EmailVerificationPage(
-            settingsController: settingsController,
-          );
+          return EmailVerificationPage(settingsController: settingsController);
         }
 
         // Only verified users can access the news feed.
-        return HomePage(
-          settingsController: settingsController,
-        );
-=======
-        // User is already logged in
-        if (snapshot.hasData) {
-          return HomePage(settingsController: settingsController);
-        }
-
-        // No logged-in user
-        return LoginPage(settingsController: settingsController);
->>>>>>> b57b41889a3e260a82d047c70ffe0bcb9c5a4de6
+        return HomePage(settingsController: settingsController);
       },
     );
   }
