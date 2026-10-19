@@ -268,8 +268,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              NotificationsPage(trendingNews: widget.news),
+                          builder: (context) => NotificationsPage(
+                            trendingNews: widget.news,
+                            notificationsEnabled:
+                                widget.settingsController.notificationsEnabled,
+                            settingsController: widget.settingsController,
+                          ),
                         ),
                       );
                     },

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'services/auth_service.dart';
-import 'home_page.dart';
+import 'email_verification_page.dart';
 import 'settings_controller.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -18,10 +18,10 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _usernameController = TextEditingController();
-
   final TextEditingController _emailController = TextEditingController();
-
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   final AuthService _authService = AuthService();
 
@@ -61,25 +61,92 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (!mounted) return;
 
+      // Registration completed and the verification request was accepted.
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              HomePage(settingsController: widget.settingsController),
+          builder: (_) => EmailVerificationPage(
+            settingsController: widget.settingsController,
+          ),
         ),
       );
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e.toString().replaceFirst('Exception: ', ''),
-            style: GoogleFonts.libreBaskerville(fontSize: 12),
+      final message = e.toString().replaceFirst('Exception: ', '');
+      final user = _authService.currentUser;
+
+      // Firebase may have created the account even if a later step
+      // (verification email request or Firestore profile creation) failed.
+      // Do not silently pretend the email was sent.
+      if (user != null && !user.emailVerified) {
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) => AlertDialog(
+            backgroundColor: const Color(0xFFEFE2C7),
+            title: Text(
+              'ACCOUNT CREATED',
+              style: GoogleFonts.libreBaskerville(
+                fontWeight: FontWeight.bold,
+                color: darkBrown,
+              ),
+            ),
+            content: Text(
+              '$message\n\nYour account may already exist. You can open '
+              'the verification screen and try sending the email again. '
+              'Do not register repeatedly with the same email.',
+              style: GoogleFonts.libreBaskerville(
+                fontSize: 12,
+                height: 1.5,
+                color: darkBrown,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                },
+                child: Text(
+                  'STAY HERE',
+                  style: GoogleFonts.libreBaskerville(color: mediumBrown),
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonBrown,
+                  foregroundColor: const Color(0xFFF3E8D0),
+                ),
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EmailVerificationPage(
+                        settingsController: widget.settingsController,
+                      ),
+                    ),
+                  );
+                },
+                child: Text(
+                  'OPEN VERIFICATION',
+                  style: GoogleFonts.libreBaskerville(fontSize: 11),
+                ),
+              ),
+            ],
           ),
-          backgroundColor: darkBrown,
-        ),
-      );
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              message,
+              style: GoogleFonts.libreBaskerville(fontSize: 12),
+            ),
+            backgroundColor: darkBrown,
+          ),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -100,33 +167,24 @@ class _RegisterPageState extends State<RegisterPage> {
   }) {
     return InputDecoration(
       hintText: hintText,
-
       hintStyle: GoogleFonts.libreBaskerville(fontSize: 11, color: borderBrown),
-
       prefixIcon: Icon(icon, color: mediumBrown, size: 20),
-
       suffixIcon: suffixIcon,
-
       filled: true,
       fillColor: const Color(0xFFE2D2B3),
-
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
-
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: borderBrown, width: 1),
       ),
-
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: darkBrown, width: 1.5),
       ),
-
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: Colors.redAccent, width: 1),
       ),
-
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
@@ -155,6 +213,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
 
     super.dispose();
   }
@@ -175,7 +234,6 @@ class _RegisterPageState extends State<RegisterPage> {
         backgroundColor: backgroundColor,
         foregroundColor: darkBrown,
         elevation: 0,
-
         title: Text(
           'SUBSCRIBE',
           style: GoogleFonts.libreBaskerville(
@@ -185,7 +243,6 @@ class _RegisterPageState extends State<RegisterPage> {
             color: darkBrown,
           ),
         ),
-
         centerTitle: true,
       ),
 
@@ -195,24 +252,18 @@ class _RegisterPageState extends State<RegisterPage> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-
           child: Form(
             key: _formKey,
-
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ==================================================
                 // TOP NEWSPAPER LINE
-                // ==================================================
 
                 const Divider(color: darkBrown, thickness: 1.2),
 
                 const SizedBox(height: 18),
 
-                // ==================================================
                 // NEWSPAPER NAME
-                // ==================================================
                 Center(
                   child: Text(
                     'CLEAN NEWS GLOBAL',
@@ -245,9 +296,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 const SizedBox(height: 20),
 
-                // ==================================================
                 // MAIN HEADING
-                // ==================================================
                 Center(
                   child: Text(
                     'Create Your Reader Account',
@@ -278,31 +327,25 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 30),
 
                 // ==================================================
-                // LARGE LOGIN-STYLE FORM CARD
+                // REGISTRATION FORM CARD
                 // ==================================================
                 Container(
                   width: double.infinity,
-
                   padding: const EdgeInsets.all(22),
-
                   decoration: BoxDecoration(
                     color: const Color(0xFFEFE2C7),
                     border: Border.all(color: borderBrown, width: 1.2),
                   ),
-
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ============================================
                       // CARD TITLE
-                      // ============================================
 
                       Row(
                         children: [
                           Expanded(
                             child: Container(height: 1, color: borderBrown),
                           ),
-
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Text(
@@ -315,7 +358,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                             ),
                           ),
-
                           Expanded(
                             child: Container(height: 1, color: borderBrown),
                           ),
@@ -324,28 +366,22 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       const SizedBox(height: 24),
 
-                      // ============================================
                       // USERNAME
-                      // ============================================
                       Text('USERNAME', style: _labelStyle()),
 
                       const SizedBox(height: 8),
 
                       TextFormField(
                         controller: _usernameController,
-
                         keyboardType: TextInputType.name,
-
                         style: GoogleFonts.libreBaskerville(
                           fontSize: 11,
                           color: darkBrown,
                         ),
-
                         decoration: _fieldDecoration(
                           hintText: 'Enter your username',
                           icon: Icons.person_outline,
                         ),
-
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return 'Please enter a username';
@@ -361,34 +397,34 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       const SizedBox(height: 20),
 
-                      // ============================================
                       // EMAIL
-                      // ============================================
                       Text('EMAIL ADDRESS', style: _labelStyle()),
 
                       const SizedBox(height: 8),
 
                       TextFormField(
                         controller: _emailController,
-
                         keyboardType: TextInputType.emailAddress,
-
                         style: GoogleFonts.libreBaskerville(
                           fontSize: 11,
                           color: darkBrown,
                         ),
-
                         decoration: _fieldDecoration(
                           hintText: 'Enter your email',
                           icon: Icons.email_outlined,
                         ),
-
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
+                          final email = value?.trim() ?? '';
+
+                          if (email.isEmpty) {
                             return 'Please enter your email';
                           }
 
-                          if (!value.contains('@') || !value.contains('.')) {
+                          final emailPattern = RegExp(
+                            r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                          );
+
+                          if (!emailPattern.hasMatch(email)) {
                             return 'Please enter a valid email';
                           }
 
@@ -398,31 +434,21 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       const SizedBox(height: 20),
 
-                      // ============================================
                       // PASSWORD
-                      // ============================================
                       Text('PASSWORD', style: _labelStyle()),
 
                       const SizedBox(height: 8),
 
                       TextFormField(
                         controller: _passwordController,
-
                         obscureText: _obscurePassword,
-
-                        onEditingComplete: () {
-                          _register();
-                        },
-
                         style: GoogleFonts.libreBaskerville(
                           fontSize: 11,
                           color: darkBrown,
                         ),
-
                         decoration: _fieldDecoration(
                           hintText: 'Create a password',
                           icon: Icons.lock_outline,
-
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
@@ -431,7 +457,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               color: mediumBrown,
                               size: 20,
                             ),
-
                             onPressed: () {
                               setState(() {
                                 _obscurePassword = !_obscurePassword;
@@ -439,14 +464,41 @@ class _RegisterPageState extends State<RegisterPage> {
                             },
                           ),
                         ),
-
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter a password';
                           }
 
-                          if (value.length < 6) {
-                            return 'Password must be at least 6 characters';
+                          return AuthService.validatePassword(value);
+                        },
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // CONFIRM PASSWORD
+                      Text('CONFIRM PASSWORD', style: _labelStyle()),
+
+                      const SizedBox(height: 8),
+
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        obscureText: _obscurePassword,
+                        onFieldSubmitted: (_) => _register(),
+                        style: GoogleFonts.libreBaskerville(
+                          fontSize: 11,
+                          color: darkBrown,
+                        ),
+                        decoration: _fieldDecoration(
+                          hintText: 'Re-enter your password',
+                          icon: Icons.lock_outline,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please confirm your password';
+                          }
+
+                          if (value != _passwordController.text) {
+                            return 'Passwords do not match';
                           }
 
                           return null;
@@ -455,31 +507,24 @@ class _RegisterPageState extends State<RegisterPage> {
 
                       const SizedBox(height: 28),
 
-                      // ============================================
                       // CREATE ACCOUNT BUTTON
-                      // ============================================
                       SizedBox(
                         width: double.infinity,
                         height: 52,
-
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: buttonBrown,
                             foregroundColor: const Color(0xFFF3E8D0),
                             elevation: 0,
-
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-
                           onPressed: _isLoading ? null : _register,
-
                           child: _isLoading
                               ? const SizedBox(
                                   width: 22,
                                   height: 22,
-
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     color: Color(0xFFF3E8D0),
@@ -502,9 +547,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 const SizedBox(height: 18),
 
-                // ==================================================
                 // BACK TO LOGIN
-                // ==================================================
                 Center(
                   child: TextButton(
                     onPressed: _isLoading
@@ -512,11 +555,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         : () {
                             Navigator.pop(context);
                           },
-
                     child: Text(
                       'Already have an account?  Back to Login',
                       textAlign: TextAlign.center,
-
                       style: GoogleFonts.libreBaskerville(
                         fontSize: 12,
                         color: darkBrown,
@@ -529,9 +570,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 const SizedBox(height: 12),
 
-                // ==================================================
                 // BOTTOM NEWSPAPER LINE
-                // ==================================================
                 const Divider(color: borderBrown, thickness: 1),
 
                 const SizedBox(height: 8),
@@ -540,7 +579,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: Text(
                     'YOUR DAILY SOURCE FOR CLEAN NEWS',
                     textAlign: TextAlign.center,
-
                     style: GoogleFonts.libreBaskerville(
                       fontSize: 7,
                       letterSpacing: 1,

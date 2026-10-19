@@ -10,11 +10,11 @@ class AppStrings {
   String get home {
     switch (language) {
       case "Tamil":
-        return "முகப்பு";
+        return "à®®à¯à®•à®ªà¯à®ªà¯";
       case "Telugu":
-        return "హోమ్";
+        return "à°¹à±‹à°®à±";
       case "Hindi":
-        return "होम";
+        return "à¤¹à¥‹à¤®";
       default:
         return "Home";
     }
@@ -23,11 +23,11 @@ class AppStrings {
   String get saved {
     switch (language) {
       case "Tamil":
-        return "சேமித்தவை";
+        return "à®šà¯‡à®®à®¿à®¤à¯à®¤à®µà¯ˆ";
       case "Telugu":
-        return "సేవ్ చేసినవి";
+        return "à°¸à±‡à°µà± à°šà±‡à°¸à°¿à°¨à°µà°¿";
       case "Hindi":
-        return "सहेजे गए";
+        return "à¤¸à¤¹à¥‡à¤œà¥‡ à¤—à¤";
       default:
         return "Saved";
     }
@@ -36,11 +36,11 @@ class AppStrings {
   String get profile {
     switch (language) {
       case "Tamil":
-        return "சுயவிவரம்";
+        return "à®šà¯à®¯à®µà®¿à®µà®°à®®à¯";
       case "Telugu":
-        return "ప్రొఫైల్";
+        return "à°ªà±à°°à±Šà°«à±ˆà°²à±";
       case "Hindi":
-        return "प्रोफ़ाइल";
+        return "à¤ªà¥à¤°à¥‹à¤«à¤¼à¤¾à¤‡à¤²";
       default:
         return "Profile";
     }
@@ -49,11 +49,11 @@ class AppStrings {
   String get settings {
     switch (language) {
       case "Tamil":
-        return "அமைப்புகள்";
+        return "à®…à®®à¯ˆà®ªà¯à®ªà¯à®•à®³à¯";
       case "Telugu":
-        return "సెట్టింగ్స్";
+        return "à°¸à±†à°Ÿà±à°Ÿà°¿à°‚à°—à±à°¸à±";
       case "Hindi":
-        return "सेटिंग्स";
+        return "à¤¸à¥‡à¤Ÿà¤¿à¤‚à¤—à¥à¤¸";
       default:
         return "Settings";
     }
@@ -66,11 +66,11 @@ class AppStrings {
   String get notifications {
     switch (language) {
       case "Tamil":
-        return "அறிவிப்புகள்";
+        return "à®…à®±à®¿à®µà®¿à®ªà¯à®ªà¯à®•à®³à¯";
       case "Telugu":
-        return "నోటిఫికేషన్లు";
+        return "à°¨à±‹à°Ÿà°¿à°«à°¿à°•à±‡à°·à°¨à±à°²à±";
       case "Hindi":
-        return "सूचनाएं";
+        return "à¤¸à¥‚à¤šà¤¨à¤¾à¤à¤‚";
       default:
         return "Notifications";
     }
@@ -79,11 +79,11 @@ class AppStrings {
   String get languageText {
     switch (language) {
       case "Tamil":
-        return "மொழி";
+        return "à®®à¯Šà®´à®¿";
       case "Telugu":
-        return "భాష";
+        return "à°­à°¾à°·";
       case "Hindi":
-        return "भाषा";
+        return "à¤­à¤¾à¤·à¤¾";
       default:
         return "Language";
     }
@@ -92,11 +92,11 @@ class AppStrings {
   String get savedArticles {
     switch (language) {
       case "Tamil":
-        return "சேமித்த கட்டுரைகள்";
+        return "à®šà¯‡à®®à®¿à®¤à¯à®¤ à®•à®Ÿà¯à®Ÿà¯à®°à¯ˆà®•à®³à¯";
       case "Telugu":
-        return "సేవ్ చేసిన కథనాలు";
+        return "à°¸à±‡à°µà± à°šà±‡à°¸à°¿à°¨ à°•à°¥à°¨à°¾à°²à±";
       case "Hindi":
-        return "सहेजे गए लेख";
+        return "à¤¸à¤¹à¥‡à¤œà¥‡ à¤—à¤ à¤²à¥‡à¤–";
       default:
         return "Saved Articles";
     }
@@ -105,11 +105,11 @@ class AppStrings {
   String get details {
     switch (language) {
       case "Tamil":
-        return "விவரங்கள்";
+        return "à®µà®¿à®µà®°à®™à¯à®•à®³à¯";
       case "Telugu":
-        return "వివరాలు";
+        return "à°µà°¿à°µà°°à°¾à°²à±";
       case "Hindi":
-        return "विवरण";
+        return "à¤µà¤¿à¤µà¤°à¤£";
       default:
         return "Details";
     }
@@ -118,11 +118,11 @@ class AppStrings {
   String get aboutUs {
     switch (language) {
       case "Tamil":
-        return "எங்களைப் பற்றி";
+        return "à®Žà®™à¯à®•à®³à¯ˆà®ªà¯ à®ªà®±à¯à®±à®¿";
       case "Telugu":
-        return "మా గురించి";
+        return "à°®à°¾ à°—à±à°°à°¿à°‚à°šà°¿";
       case "Hindi":
-        return "हमारे बारे में";
+        return "à¤¹à¤®à¤¾à¤°à¥‡ à¤¬à¤¾à¤°à¥‡ à¤®à¥‡à¤‚";
       default:
         return "About Us";
     }
@@ -131,11 +131,11 @@ class AppStrings {
   String get logout {
     switch (language) {
       case "Tamil":
-        return "வெளியேறு";
+        return "à®µà¯†à®³à®¿à®¯à¯‡à®±à¯";
       case "Telugu":
-        return "లాగ్ అవుట్";
+        return "à°²à°¾à°—à± à°…à°µà±à°Ÿà±";
       case "Hindi":
-        return "लॉग आउट";
+        return "à¤²à¥‰à¤— à¤†à¤‰à¤Ÿ";
       default:
         return "Logout";
     }
@@ -148,11 +148,11 @@ class AppStrings {
   String get changePassword {
     switch (language) {
       case "Tamil":
-        return "கடவுச்சொல்லை மாற்று";
+        return "à®•à®Ÿà®µà¯à®šà¯à®šà¯Šà®²à¯à®²à¯ˆ à®®à®¾à®±à¯à®±à¯";
       case "Telugu":
-        return "పాస్‌వర్డ్ మార్చండి";
+        return "à°ªà°¾à°¸à±â€Œà°µà°°à±à°¡à± à°®à°¾à°°à±à°šà°‚à°¡à°¿";
       case "Hindi":
-        return "पासवर्ड बदलें";
+        return "à¤ªà¤¾à¤¸à¤µà¤°à¥à¤¡ à¤¬à¤¦à¤²à¥‡à¤‚";
       default:
         return "Change Password";
     }
@@ -161,11 +161,11 @@ class AppStrings {
   String get newPassword {
     switch (language) {
       case "Tamil":
-        return "புதிய கடவுச்சொல்";
+        return "à®ªà¯à®¤à®¿à®¯ à®•à®Ÿà®µà¯à®šà¯à®šà¯Šà®²à¯";
       case "Telugu":
-        return "కొత్త పాస్‌వర్డ్";
+        return "à°•à±Šà°¤à±à°¤ à°ªà°¾à°¸à±â€Œà°µà°°à±à°¡à±";
       case "Hindi":
-        return "नया पासवर्ड";
+        return "à¤¨à¤¯à¤¾ à¤ªà¤¾à¤¸à¤µà¤°à¥à¤¡";
       default:
         return "New Password";
     }
@@ -174,11 +174,11 @@ class AppStrings {
   String get cancel {
     switch (language) {
       case "Tamil":
-        return "ரத்து செய்";
+        return "à®°à®¤à¯à®¤à¯ à®šà¯†à®¯à¯";
       case "Telugu":
-        return "రద్దు";
+        return "à°°à°¦à±à°¦à±";
       case "Hindi":
-        return "रद्द करें";
+        return "à¤°à¤¦à¥à¤¦ à¤•à¤°à¥‡à¤‚";
       default:
         return "Cancel";
     }
@@ -187,11 +187,11 @@ class AppStrings {
   String get update {
     switch (language) {
       case "Tamil":
-        return "புதுப்பிக்கவும்";
+        return "à®ªà¯à®¤à¯à®ªà¯à®ªà®¿à®•à¯à®•à®µà¯à®®à¯";
       case "Telugu":
-        return "నవీకరించు";
+        return "à°¨à°µà±€à°•à°°à°¿à°‚à°šà±";
       case "Hindi":
-        return "अपडेट करें";
+        return "à¤…à¤ªà¤¡à¥‡à¤Ÿ à¤•à¤°à¥‡à¤‚";
       default:
         return "Update";
     }
@@ -200,11 +200,11 @@ class AppStrings {
   String get passwordUpdatedSuccessfully {
     switch (language) {
       case "Tamil":
-        return "கடவுச்சொல் வெற்றிகரமாக மாற்றப்பட்டது.";
+        return "à®•à®Ÿà®µà¯à®šà¯à®šà¯Šà®²à¯ à®µà¯†à®±à¯à®±à®¿à®•à®°à®®à®¾à®• à®®à®¾à®±à¯à®±à®ªà¯à®ªà®Ÿà¯à®Ÿà®¤à¯.";
       case "Telugu":
-        return "పాస్‌వర్డ్ విజయవంతంగా మార్చబడింది.";
+        return "à°ªà°¾à°¸à±â€Œà°µà°°à±à°¡à± à°µà°¿à°œà°¯à°µà°‚à°¤à°‚à°—à°¾ à°®à°¾à°°à±à°šà°¬à°¡à°¿à°‚à°¦à°¿.";
       case "Hindi":
-        return "पासवर्ड सफलतापूर्वक अपडेट किया गया.";
+        return "à¤ªà¤¾à¤¸à¤µà¤°à¥à¤¡ à¤¸à¤«à¤²à¤¤à¤¾à¤ªà¥‚à¤°à¥à¤µà¤• à¤…à¤ªà¤¡à¥‡à¤Ÿ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾.";
       default:
         return "Password updated successfully.";
     }
@@ -213,11 +213,11 @@ class AppStrings {
   String get unableToUpdatePassword {
     switch (language) {
       case "Tamil":
-        return "கடவுச்சொல்லை மாற்ற முடியவில்லை.";
+        return "à®•à®Ÿà®µà¯à®šà¯à®šà¯Šà®²à¯à®²à¯ˆ à®®à®¾à®±à¯à®± à®®à¯à®Ÿà®¿à®¯à®µà®¿à®²à¯à®²à¯ˆ.";
       case "Telugu":
-        return "పాస్‌వర్డ్‌ను మార్చడం సాధ్యం కాలేదు.";
+        return "à°ªà°¾à°¸à±â€Œà°µà°°à±à°¡à±â€Œà°¨à± à°®à°¾à°°à±à°šà°¡à°‚ à°¸à°¾à°§à±à°¯à°‚ à°•à°¾à°²à±‡à°¦à±.";
       case "Hindi":
-        return "पासवर्ड अपडेट नहीं किया जा सका.";
+        return "à¤ªà¤¾à¤¸à¤µà¤°à¥à¤¡ à¤…à¤ªà¤¡à¥‡à¤Ÿ à¤¨à¤¹à¥€à¤‚ à¤•à¤¿à¤¯à¤¾ à¤œà¤¾ à¤¸à¤•à¤¾.";
       default:
         return "Unable to update password.";
     }
@@ -226,11 +226,11 @@ class AppStrings {
   String get samePasswordError {
     switch (language) {
       case "Tamil":
-        return "புதிய கடவுச்சொல் தற்போதைய கடவுச்சொல்லைப் போல இருக்கக்கூடாது.";
+        return "à®ªà¯à®¤à®¿à®¯ à®•à®Ÿà®µà¯à®šà¯à®šà¯Šà®²à¯ à®¤à®±à¯à®ªà¯‹à®¤à¯ˆà®¯ à®•à®Ÿà®µà¯à®šà¯à®šà¯Šà®²à¯à®²à¯ˆà®ªà¯ à®ªà¯‹à®² à®‡à®°à¯à®•à¯à®•à®•à¯à®•à¯‚à®Ÿà®¾à®¤à¯.";
       case "Telugu":
-        return "కొత్త పాస్‌వర్డ్ ప్రస్తుత పాస్‌వర్డ్‌లా ఉండకూడదు.";
+        return "à°•à±Šà°¤à±à°¤ à°ªà°¾à°¸à±â€Œà°µà°°à±à°¡à± à°ªà±à°°à°¸à±à°¤à±à°¤ à°ªà°¾à°¸à±â€Œà°µà°°à±à°¡à±â€Œà°²à°¾ à°‰à°‚à°¡à°•à±‚à°¡à°¦à±.";
       case "Hindi":
-        return "नया पासवर्ड वर्तमान पासवर्ड जैसा नहीं होना चाहिए.";
+        return "à¤¨à¤¯à¤¾ à¤ªà¤¾à¤¸à¤µà¤°à¥à¤¡ à¤µà¤°à¥à¤¤à¤®à¤¾à¤¨ à¤ªà¤¾à¤¸à¤µà¤°à¥à¤¡ à¤œà¥ˆà¤¸à¤¾ à¤¨à¤¹à¥€à¤‚ à¤¹à¥‹à¤¨à¤¾ à¤šà¤¾à¤¹à¤¿à¤.";
       default:
         return "New password cannot be the same as your current password.";
     }
@@ -239,11 +239,11 @@ class AppStrings {
   String get passwordCannotBeEmpty {
     switch (language) {
       case "Tamil":
-        return "கடவுச்சொல் காலியாக இருக்கக்கூடாது.";
+        return "à®•à®Ÿà®µà¯à®šà¯à®šà¯Šà®²à¯ à®•à®¾à®²à®¿à®¯à®¾à®• à®‡à®°à¯à®•à¯à®•à®•à¯à®•à¯‚à®Ÿà®¾à®¤à¯.";
       case "Telugu":
-        return "పాస్‌వర్డ్ ఖాళీగా ఉండకూడదు.";
+        return "à°ªà°¾à°¸à±â€Œà°µà°°à±à°¡à± à°–à°¾à°³à±€à°—à°¾ à°‰à°‚à°¡à°•à±‚à°¡à°¦à±.";
       case "Hindi":
-        return "पासवर्ड खाली नहीं हो सकता.";
+        return "à¤ªà¤¾à¤¸à¤µà¤°à¥à¤¡ à¤–à¤¾à¤²à¥€ à¤¨à¤¹à¥€à¤‚ à¤¹à¥‹ à¤¸à¤•à¤¤à¤¾.";
       default:
         return "Password cannot be empty.";
     }
@@ -256,11 +256,11 @@ class AppStrings {
   String get darkMode {
     switch (language) {
       case "Tamil":
-        return "இருண்ட பயன்முறை";
+        return "à®‡à®°à¯à®£à¯à®Ÿ à®ªà®¯à®©à¯à®®à¯à®±à¯ˆ";
       case "Telugu":
-        return "డార్క్ మోడ్";
+        return "à°¡à°¾à°°à±à°•à± à°®à±‹à°¡à±";
       case "Hindi":
-        return "डार्क मोड";
+        return "à¤¡à¤¾à¤°à¥à¤• à¤®à¥‹à¤¡";
       default:
         return "Dark Mode";
     }
@@ -269,11 +269,11 @@ class AppStrings {
   String get darkThemeEnabled {
     switch (language) {
       case "Tamil":
-        return "இருண்ட தீம் இயக்கப்பட்டுள்ளது";
+        return "à®‡à®°à¯à®£à¯à®Ÿ à®¤à¯€à®®à¯ à®‡à®¯à®•à¯à®•à®ªà¯à®ªà®Ÿà¯à®Ÿà¯à®³à¯à®³à®¤à¯";
       case "Telugu":
-        return "డార్క్ థీమ్ இயக்கించబడింది";
+        return "à°¡à°¾à°°à±à°•à± à°¥à±€à°®à± à®‡à®¯à®•à¯à®•à°¿à°‚à°šà°¬à°¡à°¿à°‚à°¦à°¿";
       case "Hindi":
-        return "डार्क थीम चालू है";
+        return "à¤¡à¤¾à¤°à¥à¤• à¤¥à¥€à¤® à¤šà¤¾à¤²à¥‚ à¤¹à¥ˆ";
       default:
         return "Dark theme is enabled";
     }
@@ -282,11 +282,11 @@ class AppStrings {
   String get lightThemeEnabled {
     switch (language) {
       case "Tamil":
-        return "ஒளி தீம் இயக்கப்பட்டுள்ளது";
+        return "à®’à®³à®¿ à®¤à¯€à®®à¯ à®‡à®¯à®•à¯à®•à®ªà¯à®ªà®Ÿà¯à®Ÿà¯à®³à¯à®³à®¤à¯";
       case "Telugu":
-        return "లైట్ థీమ్ ఉపయోగించబడుతోంది";
+        return "à°²à±ˆà°Ÿà± à°¥à±€à°®à± à°‰à°ªà°¯à±‹à°—à°¿à°‚à°šà°¬à°¡à±à°¤à±‹à°‚à°¦à°¿";
       case "Hindi":
-        return "लाइट थीम चालू है";
+        return "à¤²à¤¾à¤‡à¤Ÿ à¤¥à¥€à¤® à¤šà¤¾à¤²à¥‚ à¤¹à¥ˆ";
       default:
         return "Light theme is enabled";
     }
@@ -299,11 +299,11 @@ class AppStrings {
   String get textSize {
     switch (language) {
       case "Tamil":
-        return "எழுத்து அளவு";
+        return "à®Žà®´à¯à®¤à¯à®¤à¯ à®…à®³à®µà¯";
       case "Telugu":
-        return "వచన పరిమాణం";
+        return "à°µà°šà°¨ à°ªà°°à°¿à°®à°¾à°£à°‚";
       case "Hindi":
-        return "टेक्स्ट आकार";
+        return "à¤Ÿà¥‡à¤•à¥à¤¸à¥à¤Ÿ à¤†à¤•à¤¾à¤°";
       default:
         return "Text Size";
     }
@@ -312,11 +312,11 @@ class AppStrings {
   String get adjustReadingTextSize {
     switch (language) {
       case "Tamil":
-        return "வாசிப்பு எழுத்து அளவை மாற்றவும்";
+        return "à®µà®¾à®šà®¿à®ªà¯à®ªà¯ à®Žà®´à¯à®¤à¯à®¤à¯ à®…à®³à®µà¯ˆ à®®à®¾à®±à¯à®±à®µà¯à®®à¯";
       case "Telugu":
-        return "చదివే వచన పరిమాణాన్ని మార్చండి";
+        return "à°šà°¦à°¿à°µà±‡ à°µà°šà°¨ à°ªà°°à°¿à°®à°¾à°£à°¾à°¨à±à°¨à°¿ à°®à°¾à°°à±à°šà°‚à°¡à°¿";
       case "Hindi":
-        return "पढ़ने के लिए टेक्स्ट आकार बदलें";
+        return "à¤ªà¤¢à¤¼à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤Ÿà¥‡à¤•à¥à¤¸à¥à¤Ÿ à¤†à¤•à¤¾à¤° à¤¬à¤¦à¤²à¥‡à¤‚";
       default:
         return "Adjust reading text size";
     }
@@ -325,11 +325,11 @@ class AppStrings {
   String get small {
     switch (language) {
       case "Tamil":
-        return "சிறியது";
+        return "à®šà®¿à®±à®¿à®¯à®¤à¯";
       case "Telugu":
-        return "చిన్నది";
+        return "à°šà°¿à°¨à±à°¨à°¦à°¿";
       case "Hindi":
-        return "छोटा";
+        return "à¤›à¥‹à¤Ÿà¤¾";
       default:
         return "Small";
     }
@@ -338,11 +338,11 @@ class AppStrings {
   String get normal {
     switch (language) {
       case "Tamil":
-        return "இயல்பானது";
+        return "à®‡à®¯à®²à¯à®ªà®¾à®©à®¤à¯";
       case "Telugu":
-        return "సాధారణం";
+        return "à°¸à°¾à°§à°¾à°°à°£à°‚";
       case "Hindi":
-        return "सामान्य";
+        return "à¤¸à¤¾à¤®à¤¾à¤¨à¥à¤¯";
       default:
         return "Normal";
     }
@@ -351,11 +351,11 @@ class AppStrings {
   String get large {
     switch (language) {
       case "Tamil":
-        return "பெரியது";
+        return "à®ªà¯†à®°à®¿à®¯à®¤à¯";
       case "Telugu":
-        return "పెద్దది";
+        return "à°ªà±†à°¦à±à°¦à°¦à°¿";
       case "Hindi":
-        return "बड़ा";
+        return "à¤¬à¤¡à¤¼à¤¾";
       default:
         return "Large";
     }
@@ -368,11 +368,11 @@ class AppStrings {
   String get manageNewsNotifications {
     switch (language) {
       case "Tamil":
-        return "செய்தி அறிவிப்புகளை நிர்வகிக்கவும்";
+        return "à®šà¯†à®¯à¯à®¤à®¿ à®…à®±à®¿à®µà®¿à®ªà¯à®ªà¯à®•à®³à¯ˆ à®¨à®¿à®°à¯à®µà®•à®¿à®•à¯à®•à®µà¯à®®à¯";
       case "Telugu":
-        return "వార్తా నోటిఫికేషన్లను నిర్వహించండి";
+        return "à°µà°¾à°°à±à°¤à°¾ à°¨à±‹à°Ÿà°¿à°«à°¿à°•à±‡à°·à°¨à±à°²à°¨à± à°¨à°¿à°°à±à°µà°¹à°¿à°‚à°šà°‚à°¡à°¿";
       case "Hindi":
-        return "समाचार सूचनाएं प्रबंधित करें";
+        return "à¤¸à¤®à¤¾à¤šà¤¾à¤° à¤¸à¥‚à¤šà¤¨à¤¾à¤à¤‚ à¤ªà¥à¤°à¤¬à¤‚à¤§à¤¿à¤¤ à¤•à¤°à¥‡à¤‚";
       default:
         return "Manage news notifications";
     }
@@ -381,11 +381,11 @@ class AppStrings {
   String get newsNotificationsEnabled {
     switch (language) {
       case "Tamil":
-        return "செய்தி அறிவிப்புகள் இயக்கப்பட்டுள்ளன";
+        return "à®šà¯†à®¯à¯à®¤à®¿ à®…à®±à®¿à®µà®¿à®ªà¯à®ªà¯à®•à®³à¯ à®‡à®¯à®•à¯à®•à®ªà¯à®ªà®Ÿà¯à®Ÿà¯à®³à¯à®³à®©";
       case "Telugu":
-        return "వార్తా నోటిఫికేషన్లు ప్రారంభించబడ్డాయి";
+        return "à°µà°¾à°°à±à°¤à°¾ à°¨à±‹à°Ÿà°¿à°«à°¿à°•à±‡à°·à°¨à±à°²à± à°ªà±à°°à°¾à°°à°‚à°­à°¿à°‚à°šà°¬à°¡à±à°¡à°¾à°¯à°¿";
       case "Hindi":
-        return "समाचार सूचनाएं चालू हैं";
+        return "à¤¸à¤®à¤¾à¤šà¤¾à¤° à¤¸à¥‚à¤šà¤¨à¤¾à¤à¤‚ à¤šà¤¾à¤²à¥‚ à¤¹à¥ˆà¤‚";
       default:
         return "News notifications are enabled";
     }
@@ -394,11 +394,11 @@ class AppStrings {
   String get newsNotificationsDisabled {
     switch (language) {
       case "Tamil":
-        return "செய்தி அறிவிப்புகள் முடக்கப்பட்டுள்ளன";
+        return "à®šà¯†à®¯à¯à®¤à®¿ à®…à®±à®¿à®µà®¿à®ªà¯à®ªà¯à®•à®³à¯ à®®à¯à®Ÿà®•à¯à®•à®ªà¯à®ªà®Ÿà¯à®Ÿà¯à®³à¯à®³à®©";
       case "Telugu":
-        return "వార్తా నోటిఫికేషన్లు నిలిపివేయబడ్డాయి";
+        return "à°µà°¾à°°à±à°¤à°¾ à°¨à±‹à°Ÿà°¿à°«à°¿à°•à±‡à°·à°¨à±à°²à± à°¨à°¿à°²à°¿à°ªà°¿à°µà±‡à°¯à°¬à°¡à±à°¡à°¾à°¯à°¿";
       case "Hindi":
-        return "समाचार सूचनाएं बंद हैं";
+        return "à¤¸à¤®à¤¾à¤šà¤¾à¤° à¤¸à¥‚à¤šà¤¨à¤¾à¤à¤‚ à¤¬à¤‚à¤¦ à¤¹à¥ˆà¤‚";
       default:
         return "News notifications are disabled";
     }
@@ -411,11 +411,11 @@ class AppStrings {
   String get viewUsernameEmail {
     switch (language) {
       case "Tamil":
-        return "பயனர்பெயர் மற்றும் மின்னஞ்சலைப் பார்க்கவும்";
+        return "à®ªà®¯à®©à®°à¯à®ªà¯†à®¯à®°à¯ à®®à®±à¯à®±à¯à®®à¯ à®®à®¿à®©à¯à®©à®žà¯à®šà®²à¯ˆà®ªà¯ à®ªà®¾à®°à¯à®•à¯à®•à®µà¯à®®à¯";
       case "Telugu":
-        return "వినియోగదారు పేరు మరియు ఇమెయిల్ చూడండి";
+        return "à°µà°¿à°¨à°¿à°¯à±‹à°—à°¦à°¾à°°à± à°ªà±‡à°°à± à°®à°°à°¿à°¯à± à°‡à°®à±†à°¯à°¿à°²à± à°šà±‚à°¡à°‚à°¡à°¿";
       case "Hindi":
-        return "उपयोगकर्ता नाम और ईमेल देखें";
+        return "à¤‰à¤ªà¤¯à¥‹à¤—à¤•à¤°à¥à¤¤à¤¾ à¤¨à¤¾à¤® à¤”à¤° à¤ˆà¤®à¥‡à¤² à¤¦à¥‡à¤–à¥‡à¤‚";
       default:
         return "View username and email";
     }
@@ -428,11 +428,11 @@ class AppStrings {
   String get aboutCleanNews {
     switch (language) {
       case "Tamil":
-        return "க்ளீன் நியூஸ் குளோபல் பற்றி";
+        return "à®•à¯à®³à¯€à®©à¯ à®¨à®¿à®¯à¯‚à®¸à¯ à®•à¯à®³à¯‹à®ªà®²à¯ à®ªà®±à¯à®±à®¿";
       case "Telugu":
-        return "ది క్లీన్ న్యూస్ గ్లోబల్ గురించి";
+        return "à°¦à°¿ à°•à±à°²à±€à°¨à± à°¨à±à°¯à±‚à°¸à± à°—à±à°²à±‹à°¬à°²à± à°—à±à°°à°¿à°‚à°šà°¿";
       case "Hindi":
-        return "द क्लीन न्यूज़ ग्लोबल के बारे में";
+        return "à¤¦ à¤•à¥à¤²à¥€à¤¨ à¤¨à¥à¤¯à¥‚à¤œà¤¼ à¤—à¥à¤²à¥‹à¤¬à¤² à¤•à¥‡ à¤¬à¤¾à¤°à¥‡ à¤®à¥‡à¤‚";
       default:
         return "About The Clean News Global";
     }
@@ -441,11 +441,11 @@ class AppStrings {
   String get aboutCleanNewsDescription {
     switch (language) {
       case "Tamil":
-        return "தி க்ளீன் நியூஸ் குளோபல் இந்தியா மற்றும் உலகம் முழுவதிலிருந்தும் செய்திகளை எளிமையாகவும் சுத்தமாகவும் படிக்க உதவுகிறது.";
+        return "à®¤à®¿ à®•à¯à®³à¯€à®©à¯ à®¨à®¿à®¯à¯‚à®¸à¯ à®•à¯à®³à¯‹à®ªà®²à¯ à®‡à®¨à¯à®¤à®¿à®¯à®¾ à®®à®±à¯à®±à¯à®®à¯ à®‰à®²à®•à®®à¯ à®®à¯à®´à¯à®µà®¤à®¿à®²à®¿à®°à¯à®¨à¯à®¤à¯à®®à¯ à®šà¯†à®¯à¯à®¤à®¿à®•à®³à¯ˆ à®Žà®³à®¿à®®à¯ˆà®¯à®¾à®•à®µà¯à®®à¯ à®šà¯à®¤à¯à®¤à®®à®¾à®•à®µà¯à®®à¯ à®ªà®Ÿà®¿à®•à¯à®• à®‰à®¤à®µà¯à®•à®¿à®±à®¤à¯.";
       case "Telugu":
-        return "ది క్లీన్ న్యూస్ గ్లోబల్ భారతదేశం మరియు ప్రపంచవ్యాప్తంగా వార్తలను సులభంగా మరియు సరళంగా తెలుసుకోవడానికి సహాయపడుతుంది.";
+        return "à°¦à°¿ à°•à±à°²à±€à°¨à± à°¨à±à°¯à±‚à°¸à± à°—à±à°²à±‹à°¬à°²à± à°­à°¾à°°à°¤à°¦à±‡à°¶à°‚ à°®à°°à°¿à°¯à± à°ªà±à°°à°ªà°‚à°šà°µà±à°¯à°¾à°ªà±à°¤à°‚à°—à°¾ à°µà°¾à°°à±à°¤à°²à°¨à± à°¸à±à°²à°­à°‚à°—à°¾ à°®à°°à°¿à°¯à± à°¸à°°à°³à°‚à°—à°¾ à°¤à±†à°²à±à°¸à±à°•à±‹à°µà°¡à°¾à°¨à°¿à°•à°¿ à°¸à°¹à°¾à°¯à°ªà°¡à±à°¤à±à°‚à°¦à°¿.";
       case "Hindi":
-        return "द क्लीन न्यूज़ ग्लोबल भारत और दुनिया भर की खबरों को सरल और साफ तरीके से पढ़ने की सुविधा देता है.";
+        return "à¤¦ à¤•à¥à¤²à¥€à¤¨ à¤¨à¥à¤¯à¥‚à¤œà¤¼ à¤—à¥à¤²à¥‹à¤¬à¤² à¤­à¤¾à¤°à¤¤ à¤”à¤° à¤¦à¥à¤¨à¤¿à¤¯à¤¾ à¤­à¤° à¤•à¥€ à¤–à¤¬à¤°à¥‹à¤‚ à¤•à¥‹ à¤¸à¤°à¤² à¤”à¤° à¤¸à¤¾à¤« à¤¤à¤°à¥€à¤•à¥‡ à¤¸à¥‡ à¤ªà¤¢à¤¼à¤¨à¥‡ à¤•à¥€ à¤¸à¥à¤µà¤¿à¤§à¤¾ à¤¦à¥‡à¤¤à¤¾ à¤¹à¥ˆ.";
       default:
         return "The Clean News Global provides a clean and simple way to discover and read news from India and around the world.";
     }
@@ -458,11 +458,11 @@ class AppStrings {
   String get privacyPolicy {
     switch (language) {
       case "Tamil":
-        return "தனியுரிமைக் கொள்கை";
+        return "à®¤à®©à®¿à®¯à¯à®°à®¿à®®à¯ˆà®•à¯ à®•à¯Šà®³à¯à®•à¯ˆ";
       case "Telugu":
-        return "గోప్యతా విధానం";
+        return "à°—à±‹à°ªà±à°¯à°¤à°¾ à°µà°¿à°§à°¾à°¨à°‚";
       case "Hindi":
-        return "गोपनीयता नीति";
+        return "à¤—à¥‹à¤ªà¤¨à¥€à¤¯à¤¤à¤¾ à¤¨à¥€à¤¤à¤¿";
       default:
         return "Privacy Policy";
     }
@@ -471,11 +471,11 @@ class AppStrings {
   String get privacyPolicyDescription {
     switch (language) {
       case "Tamil":
-        return "உங்கள் கணக்கு தகவல்கள் தி க்ளீன் நியூஸ் குளோபலின் அம்சங்களை வழங்குவதற்காக மட்டுமே பயன்படுத்தப்படுகின்றன. உங்கள் தனிப்பட்ட கணக்கு தகவல்கள் பொதுவாக வெளியிடப்படாது.";
+        return "à®‰à®™à¯à®•à®³à¯ à®•à®£à®•à¯à®•à¯ à®¤à®•à®µà®²à¯à®•à®³à¯ à®¤à®¿ à®•à¯à®³à¯€à®©à¯ à®¨à®¿à®¯à¯‚à®¸à¯ à®•à¯à®³à¯‹à®ªà®²à®¿à®©à¯ à®…à®®à¯à®šà®™à¯à®•à®³à¯ˆ à®µà®´à®™à¯à®•à¯à®µà®¤à®±à¯à®•à®¾à®• à®®à®Ÿà¯à®Ÿà¯à®®à¯‡ à®ªà®¯à®©à¯à®ªà®Ÿà¯à®¤à¯à®¤à®ªà¯à®ªà®Ÿà¯à®•à®¿à®©à¯à®±à®©. à®‰à®™à¯à®•à®³à¯ à®¤à®©à®¿à®ªà¯à®ªà®Ÿà¯à®Ÿ à®•à®£à®•à¯à®•à¯ à®¤à®•à®µà®²à¯à®•à®³à¯ à®ªà¯Šà®¤à¯à®µà®¾à®• à®µà¯†à®³à®¿à®¯à®¿à®Ÿà®ªà¯à®ªà®Ÿà®¾à®¤à¯.";
       case "Telugu":
-        return "మీ ఖాతా సమాచారం ది క్లీన్ న్యూస్ గ్లోబల్ ఫీచర్లను అందించడానికి మాత్రమే ఉపయోగించబడుతుంది. మీ వ్యక్తిగత ఖాతా సమాచారం పబ్లిక్‌గా ప్రదర్శించబడదు.";
+        return "à°®à±€ à°–à°¾à°¤à°¾ à°¸à°®à°¾à°šà°¾à°°à°‚ à°¦à°¿ à°•à±à°²à±€à°¨à± à°¨à±à°¯à±‚à°¸à± à°—à±à°²à±‹à°¬à°²à± à°«à±€à°šà°°à±à°²à°¨à± à°…à°‚à°¦à°¿à°‚à°šà°¡à°¾à°¨à°¿à°•à°¿ à°®à°¾à°¤à±à°°à°®à±‡ à°‰à°ªà°¯à±‹à°—à°¿à°‚à°šà°¬à°¡à±à°¤à±à°‚à°¦à°¿. à°®à±€ à°µà±à°¯à°•à±à°¤à°¿à°—à°¤ à°–à°¾à°¤à°¾ à°¸à°®à°¾à°šà°¾à°°à°‚ à°ªà°¬à±à°²à°¿à°•à±â€Œà°—à°¾ à°ªà±à°°à°¦à°°à±à°¶à°¿à°‚à°šà°¬à°¡à°¦à±.";
       case "Hindi":
-        return "आपकी खाता जानकारी का उपयोग केवल द क्लीन न्यूज़ ग्लोबल की सुविधाएं प्रदान करने के लिए किया जाता है. आपकी निजी खाता जानकारी सार्वजनिक रूप से प्रदर्शित नहीं की जाती.";
+        return "à¤†à¤ªà¤•à¥€ à¤–à¤¾à¤¤à¤¾ à¤œà¤¾à¤¨à¤•à¤¾à¤°à¥€ à¤•à¤¾ à¤‰à¤ªà¤¯à¥‹à¤— à¤•à¥‡à¤µà¤² à¤¦ à¤•à¥à¤²à¥€à¤¨ à¤¨à¥à¤¯à¥‚à¤œà¤¼ à¤—à¥à¤²à¥‹à¤¬à¤² à¤•à¥€ à¤¸à¥à¤µà¤¿à¤§à¤¾à¤à¤‚ à¤ªà¥à¤°à¤¦à¤¾à¤¨ à¤•à¤°à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤•à¤¿à¤¯à¤¾ à¤œà¤¾à¤¤à¤¾ à¤¹à¥ˆ. à¤†à¤ªà¤•à¥€ à¤¨à¤¿à¤œà¥€ à¤–à¤¾à¤¤à¤¾ à¤œà¤¾à¤¨à¤•à¤¾à¤°à¥€ à¤¸à¤¾à¤°à¥à¤µà¤œà¤¨à¤¿à¤• à¤°à¥‚à¤ª à¤¸à¥‡ à¤ªà¥à¤°à¤¦à¤°à¥à¤¶à¤¿à¤¤ à¤¨à¤¹à¥€à¤‚ à¤•à¥€ à¤œà¤¾à¤¤à¥€.";
       default:
         return "Your account information is used only to provide the features of The Clean News Global. We do not display your private account information publicly.";
     }
@@ -488,11 +488,11 @@ class AppStrings {
   String get okay {
     switch (language) {
       case "Tamil":
-        return "சரி";
+        return "à®šà®°à®¿";
       case "Telugu":
-        return "సరే";
+        return "à°¸à°°à±‡";
       case "Hindi":
-        return "ठीक है";
+        return "à¤ à¥€à¤• à¤¹à¥ˆ";
       default:
         return "Okay";
     }
@@ -501,11 +501,11 @@ class AppStrings {
   String get close {
     switch (language) {
       case "Tamil":
-        return "மூடு";
+        return "à®®à¯‚à®Ÿà¯";
       case "Telugu":
-        return "మూసివేయి";
+        return "à°®à±‚à°¸à°¿à°µà±‡à°¯à°¿";
       case "Hindi":
-        return "बंद करें";
+        return "à¤¬à¤‚à¤¦ à¤•à¤°à¥‡à¤‚";
       default:
         return "Close";
     }
@@ -514,11 +514,11 @@ class AppStrings {
   String get selectLanguage {
     switch (language) {
       case "Tamil":
-        return "மொழியைத் தேர்ந்தெடுக்கவும்";
+        return "à®®à¯Šà®´à®¿à®¯à¯ˆà®¤à¯ à®¤à¯‡à®°à¯à®¨à¯à®¤à¯†à®Ÿà¯à®•à¯à®•à®µà¯à®®à¯";
       case "Telugu":
-        return "భాషను ఎంచుకోండి";
+        return "à°­à°¾à°·à°¨à± à°Žà°‚à°šà±à°•à±‹à°‚à°¡à°¿";
       case "Hindi":
-        return "भाषा चुनें";
+        return "à¤­à¤¾à¤·à¤¾ à¤šà¥à¤¨à¥‡à¤‚";
       default:
         return "Select Language";
     }
