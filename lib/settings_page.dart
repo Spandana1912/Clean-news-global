@@ -526,11 +526,18 @@
 // }
 
 import 'package:flutter/material.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:google_fonts/google_fonts.dart';
 
 import 'theme.dart';
 import 'settings_controller.dart';
+import 'app_strings.dart';
+import 'services/auth_service.dart';
+
+import 'settings_controller.dart';
+
 import 'app_strings.dart';
 import 'services/auth_service.dart';
 
