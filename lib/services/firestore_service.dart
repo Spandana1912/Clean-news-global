@@ -1,5 +1,10 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../models/article.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -65,5 +70,41 @@ class FirestoreService {
     }
 
     return null;
+  }
+
+  // ------------------------------------------------------------
+  // SAVED ARTICLES  (users/{uid}/savedArticles/{sha1(articleUrl)})
+  // ------------------------------------------------------------
+
+  CollectionReference<Map<String, dynamic>> _savedRef(String uid) {
+    return _firestore.collection('users').doc(uid).collection('savedArticles');
+  }
+
+  /// Stable document id for an article, so saving the same article twice
+  /// never creates a duplicate.
+  static String savedDocId(String articleUrl) {
+    return sha1.convert(utf8.encode(articleUrl.trim())).toString();
+  }
+
+  Future<void> saveArticle(String uid, Article article) async {
+    await _savedRef(uid).doc(savedDocId(article.articleUrl)).set({
+      ...article.toMap(),
+      'savedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> removeSavedArticle(String uid, String articleUrl) async {
+    await _savedRef(uid).doc(savedDocId(articleUrl)).delete();
+  }
+
+  /// Live list of the user's saved articles, newest first.
+  Stream<List<Article>> savedArticlesStream(String uid) {
+    return _savedRef(uid)
+        .orderBy('savedAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Article.fromMap(doc.data())).toList(),
+        );
   }
 }

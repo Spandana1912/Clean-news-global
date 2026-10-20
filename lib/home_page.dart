@@ -20,6 +20,9 @@ import 'settings_page.dart';
 import 'settings_controller.dart';
 import 'theme.dart';
 import 'notifications_page.dart';
+import 'app_strings.dart';
+import 'weather_card.dart';
+import 'ai_summary_dialog.dart';
 
 // ==========================================================
 // ARTICLE WEB VIEW
@@ -77,8 +80,7 @@ class _ArticleWebViewPageState extends State<ArticleWebViewPage> {
             if (!mounted) return;
 
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Unable to load this article.'),
+              SnackBar(content: Text(AppStrings.of(context).unableToLoadArticle),
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -123,7 +125,7 @@ class _ArticleWebViewPageState extends State<ArticleWebViewPage> {
           elevation: 0,
 
           title: Text(
-            'ARTICLE',
+            AppStrings.of(context).articleTitle,
             style: TextStyle(
               color: textColor,
               fontWeight: FontWeight.w900,
@@ -234,10 +236,40 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int bottomIndex = 0;
 
   // ==========================================================
-  // BOOKMARK STATES
+  // SAVED ARTICLES (stored in Firestore)
   // ==========================================================
 
-  List<bool> bookmarked = [];
+  final FirestoreService _savedService = FirestoreService();
+
+  StreamSubscription<List<Article>>? _savedSubscription;
+
+  // Article URLs the user has saved.
+  Set<String> _savedUrls = {};
+
+  void _listenToSavedArticles() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
+    _savedSubscription?.cancel();
+
+    _savedSubscription = _savedService
+        .savedArticlesStream(user.uid)
+        .listen(
+          (saved) {
+            if (!mounted) return;
+
+            setState(() {
+              _savedUrls = saved.map((a) => a.articleUrl).toSet();
+            });
+          },
+          onError: (Object e) {
+            debugPrint('Saved articles stream error: $e');
+          },
+        );
+  }
+
+  bool _isSaved(Article article) => _savedUrls.contains(article.articleUrl);
 
   // ==========================================================
   // LOAD USERNAME
@@ -427,8 +459,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Checking for the latest news...'),
+        SnackBar(content: Text(AppStrings.of(context).checkingLatestSnack),
           duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
         ),
@@ -470,8 +501,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
       setState(() {
         _articles = articles;
-
-        bookmarked = List<bool>.filled(articles.length, false);
 
         _isSearching = false;
         _isSearchMode = true;
@@ -541,8 +570,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       setState(() {
         _articles = articles;
 
-        bookmarked = List<bool>.filled(articles.length, false);
-
         if (newArticles.isNotEmpty) {
           // Only keep a few articles in
           // the notification list.
@@ -566,9 +593,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              newArticles.length == 1
-                  ? '1 new article is available.'
-                  : '${newArticles.length} new articles are available.',
+              AppStrings.of(context).newArticlesAvailable(newArticles.length),
             ),
             duration: const Duration(seconds: 3),
             behavior: SnackBarBehavior.floating,
@@ -586,8 +611,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("You're up to date. No new news found."),
+          SnackBar(content: Text(AppStrings.of(context).upToDate),
             duration: Duration(seconds: 3),
             behavior: SnackBarBehavior.floating,
           ),
@@ -606,8 +630,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not check for latest news.'),
+          SnackBar(content: Text(AppStrings.of(context).couldNotCheckLatest),
             duration: Duration(seconds: 3),
             behavior: SnackBarBehavior.floating,
           ),
@@ -630,6 +653,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
     _loadUsername();
 
+    _listenToSavedArticles();
+
     // Start automatic checking.
     _startNewsCheckTimer();
   }
@@ -641,6 +666,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   void dispose() {
     _stopNewsCheckTimer();
+
+    _savedSubscription?.cancel();
 
     WidgetsBinding.instance.removeObserver(this);
 
@@ -669,35 +696,94 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   // TOGGLE BOOKMARK
   // ==========================================================
 
-  void toggleBookmark(int index) {
-    if (index < 0 || index >= bookmarked.length) {
+  Future<void> toggleBookmark(int index) async {
+    if (index < 0 || index >= _articles.length) {
+      return;
+    }
+
+    final article = _articles[index];
+    final s = AppStrings.of(context);
+
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(s.signInToSave),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (article.articleUrl.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(s.linkUnavailable),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     final accentColor = isDark ? darkBrownColor : brownColor;
-
     final snackbarTextColor = isDark ? darkInkColor : paperColor;
 
+    final wasSaved = _isSaved(article);
+
+    // Update the heart instantly; the Firestore stream confirms it.
     setState(() {
-      bookmarked[index] = !bookmarked[index];
+      if (wasSaved) {
+        _savedUrls = {..._savedUrls}..remove(article.articleUrl);
+      } else {
+        _savedUrls = {..._savedUrls, article.articleUrl};
+      }
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        duration: const Duration(seconds: 1),
-        backgroundColor: accentColor,
-        content: Text(
-          bookmarked[index]
-              ? "Article saved to your archive."
-              : "Article removed from your archive.",
-          style: TextStyle(color: snackbarTextColor),
+    try {
+      if (wasSaved) {
+        await _savedService.removeSavedArticle(user.uid, article.articleUrl);
+      } else {
+        await _savedService.saveArticle(user.uid, article);
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 1),
+          backgroundColor: accentColor,
+          content: Text(
+            wasSaved ? s.articleRemoved : s.articleSaved,
+            style: TextStyle(color: snackbarTextColor),
+          ),
+          behavior: SnackBarBehavior.floating,
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         ),
-        behavior: SnackBarBehavior.floating,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-      ),
-    );
+      );
+    } catch (e) {
+      debugPrint('Could not update saved article: $e');
+
+      if (!mounted) return;
+
+      // Undo the optimistic change.
+      setState(() {
+        if (wasSaved) {
+          _savedUrls = {..._savedUrls, article.articleUrl};
+        } else {
+          _savedUrls = {..._savedUrls}..remove(article.articleUrl);
+        }
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(s.couldNotUpdateSaved),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   // ==========================================================
@@ -707,8 +793,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void shareNews(String url) {
     if (url.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Article link is not available."),
+        SnackBar(content: Text(AppStrings.of(context).linkUnavailable),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -731,7 +816,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           backgroundColor: cardBackgroundColor,
 
           title: Text(
-            "Share Article",
+            AppStrings.of(context).shareArticle,
             style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
           ),
 
@@ -745,7 +830,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text("Close", style: TextStyle(color: accentColor)),
+              child: Text(AppStrings.of(context).close, style: TextStyle(color: accentColor)),
             ),
 
             ElevatedButton(
@@ -755,8 +840,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Navigator.pop(context);
 
                 ScaffoldMessenger.of(this.context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Link copied!"),
+                  SnackBar(content: Text(AppStrings.of(this.context).linkCopied),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -767,7 +851,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 foregroundColor: isDark ? darkPaperColor : paperColor,
               ),
 
-              child: const Text("Copy Link"),
+              child: Text(AppStrings.of(context).copyLink),
             ),
           ],
         );
@@ -784,8 +868,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Article link is not available.'),
+        SnackBar(content: Text(AppStrings.of(context).linkUnavailable),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -799,8 +882,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid article link.'),
+        SnackBar(content: Text(AppStrings.of(context).invalidLink),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -825,8 +907,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
     if (!opened && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not open the article.'),
+        SnackBar(content: Text(AppStrings.of(context).couldNotOpenArticle),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -903,7 +984,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Navigator.pop(context);
               },
               child: Text(
-                "CLOSE",
+                AppStrings.of(context).close.toUpperCase(),
                 style: TextStyle(
                   color: accentColor,
                   fontWeight: FontWeight.bold,
@@ -951,109 +1032,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   // ==========================================================
 
   Future<void> _showAiSummary(Article article) async {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final backgroundColor = isDark ? darkCardColor : const Color(0xFFEFE2C7);
-
-    final textColor = isDark ? darkInkColor : inkColor;
-
-    final accentColor = isDark ? darkBrownColor : brownColor;
-
-    final summaryFuture = _aiSummaryService.summarizeArticle(article);
+    final summaryFuture = _aiSummaryService.summarizeArticle(
+      article,
+      language: widget.settingsController.language,
+    );
 
     await showDialog<void>(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: backgroundColor,
-
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-
-          title: Row(
-            children: [
-              Icon(Icons.auto_awesome, color: accentColor),
-
-              const SizedBox(width: 8),
-
-              Expanded(
-                child: Text(
-                  'AI ARTICLE SUMMARY',
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          content: SizedBox(
-            width: 520,
-
-            child: FutureBuilder<String>(
-              future: summaryFuture,
-
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 28),
-
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-
-                      children: [
-                        CircularProgressIndicator(color: accentColor),
-
-                        const SizedBox(height: 16),
-
-                        Text(
-                          'Preparing your article summary...',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: textColor),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                if (snapshot.hasError) {
-                  return SingleChildScrollView(
-                    child: Text(
-                      snapshot.error.toString().replaceFirst('Exception: ', ''),
-                      style: TextStyle(color: textColor, height: 1.6),
-                    ),
-                  );
-                }
-
-                return SingleChildScrollView(
-                  child: SelectableText(
-                    snapshot.data ?? 'No summary was returned.',
-                    style: TextStyle(
-                      color: textColor,
-                      height: 1.6,
-                      fontSize: 13,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(
-                'CLOSE',
-                style: TextStyle(
-                  color: accentColor,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+      builder: (_) => AiSummaryDialog(
+        summaryFuture: summaryFuture,
+        language: widget.settingsController.language,
+      ),
     );
   }
 
@@ -1151,7 +1140,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     color: textColor,
 
                     child: Text(
-                      _isSearchMode ? "SEARCH" : categories[selectedCategory],
+                      _isSearchMode
+                          ? AppStrings.of(context).searchBadge
+                          : AppStrings.of(context).category(selectedCategory),
                       style: TextStyle(
                         color: badgeTextColor,
                         fontWeight: FontWeight.bold,
@@ -1177,7 +1168,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
                     child: IconButton(
                       icon: Icon(
-                        bookmarked[index]
+                        _isSaved(item)
                             ? Icons.bookmark
                             : Icons.bookmark_border,
                         color: accentColor,
@@ -1287,7 +1278,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       ),
 
                       label: Text(
-                        'AI SUMMARY',
+                        AppStrings.of(context).aiSummary,
                         style: TextStyle(
                           color: accentColor,
                           fontWeight: FontWeight.bold,
@@ -1313,7 +1304,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                         ),
 
                         label: Text(
-                          "READ ARTICLE",
+                          AppStrings.of(context).readArticle,
                           style: TextStyle(color: accentColor),
                         ),
                       ),
@@ -1423,7 +1414,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
             children: [
               Text(
-                "TODAY'S TEA ☕️",
+                AppStrings.of(context).todaysTea,
                 style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.w900,
@@ -1433,7 +1424,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               ),
 
               Text(
-                "GLOBAL EDITION  •  DAILY NEWS",
+                AppStrings.of(context).globalEditionTagline,
                 style: TextStyle(
                   fontSize: 9,
                   letterSpacing: 1.5,
@@ -1449,7 +1440,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             // ==================================================
 
             IconButton(
-              tooltip: _isSearchMode ? "Clear search" : "Search news",
+              tooltip: _isSearchMode ? AppStrings.of(context).clearSearchTooltip : AppStrings.of(context).searchNewsTooltip,
 
               onPressed: () {
                 if (_isSearchMode) {
@@ -1472,7 +1463,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
                 child: Center(
                   child: Text(
-                    "Hi, $_username 👋",
+                    AppStrings.of(context).hiUser(_username),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -1570,7 +1561,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   backgroundColor: accentColor,
 
                   content: Text(
-                    "Today's edition has been refreshed.",
+                    AppStrings.of(context).editionRefreshed,
                     style: TextStyle(color: selectedChipTextColor),
                   ),
                 ),
@@ -1591,7 +1582,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   child: Row(
                     children: [
                       Text(
-                        DateFormat('EEEE').format(DateTime.now()).toUpperCase(),
+                        DateFormat('EEEE', AppStrings.of(context).localeCode).format(DateTime.now()).toUpperCase(),
 
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -1604,7 +1595,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       const Spacer(),
 
                       Text(
-                        DateFormat('dd MMMM yyyy')
+                        DateFormat('dd MMMM yyyy', AppStrings.of(context).localeCode)
                             .format(DateTime.now())
                             .toUpperCase(),
 
@@ -1614,6 +1605,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   ),
                 ),
               ),
+
+              // WEATHER NOW
+              const SliverToBoxAdapter(child: WeatherCard()),
 
               // ==================================================
               // SEARCH BAR
@@ -1638,7 +1632,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       },
 
                       decoration: InputDecoration(
-                        hintText: 'Search news...',
+                        hintText: AppStrings.of(context).searchNewsHint,
 
                         hintStyle: TextStyle(color: accentColor, fontSize: 13),
 
@@ -1700,8 +1694,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       Expanded(
                         child: Text(
                           _isSearchMode
-                              ? "SEARCHING FOR: ${_searchQuery.toUpperCase()}"
-                              : "TRENDING TODAY",
+                              ? AppStrings.of(context).searchingFor(_searchQuery)
+                              : AppStrings.of(context).trendingToday,
 
                           overflow: TextOverflow.ellipsis,
 
@@ -1748,8 +1742,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
                       label: Text(
                         _isCheckingLatestNews
-                            ? 'CHECKING LATEST NEWS...'
-                            : 'CHECK LATEST NEWS',
+                            ? AppStrings.of(context).checkingLatestNews
+                            : AppStrings.of(context).checkLatestNews,
                         style: TextStyle(
                           color: accentColor,
                           fontWeight: FontWeight.bold,
@@ -1784,7 +1778,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     child: Row(
                       children: [
                         Text(
-                          'NEWS FROM',
+                          AppStrings.of(context).newsFrom,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w900,
@@ -1797,7 +1791,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
                         // INDIA
                         ChoiceChip(
-                          label: const Text('INDIA'),
+                          label: Text(AppStrings.of(context).india),
 
                           selected: !_isInternational,
 
@@ -1838,7 +1832,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
                         // INTERNATIONAL
                         ChoiceChip(
-                          label: const Text('INTERNATIONAL'),
+                          label: Text(AppStrings.of(context).international),
 
                           selected: _isInternational,
 
@@ -1904,7 +1898,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           padding: const EdgeInsets.only(right: 8),
 
                           child: ChoiceChip(
-                            label: Text(categories[index]),
+                            label: Text(AppStrings.of(context).category(index)),
 
                             selected: selected,
 
@@ -1963,7 +1957,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 child: sectionHeader(
                   context,
 
-                  _isSearchMode ? "SEARCH RESULTS" : "TOP STORIES",
+                  _isSearchMode ? AppStrings.of(context).searchResults : AppStrings.of(context).topStories,
                 ),
               ),
 
@@ -2034,8 +2028,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
                           Text(
                             _isSearchMode
-                                ? "Unable to search for news."
-                                : "Unable to load today's news.",
+                                ? AppStrings.of(context).unableToSearch
+                                : AppStrings.of(context).unableToLoadNews,
 
                             textAlign: TextAlign.center,
 
@@ -2060,7 +2054,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                             onPressed: _isSearchMode ? _searchNews : _fetchNews,
 
                             child: Text(
-                              "TRY AGAIN",
+                              AppStrings.of(context).tryAgain,
                               style: TextStyle(color: accentColor),
                             ),
                           ),
@@ -2097,8 +2091,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
                           Text(
                             _isSearchMode
-                                ? 'No latest news available on this feed.'
-                                : 'No news articles available right now.',
+                                ? AppStrings.of(context).noSearchResults
+                                : AppStrings.of(context).noNews,
 
                             textAlign: TextAlign.center,
 
@@ -2113,7 +2107,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                             const SizedBox(height: 8),
 
                             Text(
-                              'Try searching for another topic.',
+                              AppStrings.of(context).tryAnotherTopic,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: accentColor,
@@ -2141,7 +2135,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       const SizedBox(height: 8),
 
                       Text(
-                        "THE CLEAN NEWS GLOBAL",
+                        AppStrings.of(context).brandName.toUpperCase(),
                         style: TextStyle(
                           fontWeight: FontWeight.w900,
                           letterSpacing: 2,
@@ -2152,7 +2146,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       const SizedBox(height: 5),
 
                       Text(
-                        "READ • DISCOVER • UNDERSTAND",
+                        AppStrings.of(context).readDiscoverUnderstand,
                         style: TextStyle(
                           fontSize: 9,
                           letterSpacing: 2,
@@ -2188,17 +2182,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               Navigator.push(
                 context,
 
-                MaterialPageRoute(
-                  builder: (context) => SavedPage(
-                    news: news,
-
-                    bookmarked: bookmarked,
-
-                    onBookmarkChanged: (articleIndex) {
-                      toggleBookmark(articleIndex);
-                    },
-                  ),
-                ),
+                MaterialPageRoute(builder: (context) => const SavedPage()),
               );
             }
 
@@ -2226,10 +2210,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   builder: (context) => ProfilePage(
                     news: news,
 
-                    bookmarked: bookmarked,
-
-                    onBookmarkChanged: toggleBookmark,
-
                     settingsController: widget.settingsController,
                   ),
                 ),
@@ -2243,7 +2223,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
               selectedIcon: Icon(Icons.home, color: textColor),
 
-              label: "Home",
+              label: AppStrings.of(context).home,
             ),
 
             NavigationDestination(
@@ -2251,7 +2231,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
               selectedIcon: Icon(Icons.bookmark, color: textColor),
 
-              label: "Saved",
+              label: AppStrings.of(context).saved,
             ),
 
             NavigationDestination(
@@ -2259,7 +2239,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
               selectedIcon: Icon(Icons.settings, color: textColor),
 
-              label: "Settings",
+              label: AppStrings.of(context).settings,
             ),
 
             NavigationDestination(
@@ -2267,7 +2247,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
               selectedIcon: Icon(Icons.person, color: textColor),
 
-              label: "Profile",
+              label: AppStrings.of(context).profile,
             ),
           ],
         ),

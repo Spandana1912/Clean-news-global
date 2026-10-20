@@ -9,18 +9,15 @@ import 'saved_page.dart';
 import 'notifications_page.dart';
 import 'settings_controller.dart';
 import 'app_strings.dart';
+import 'services/auth_service.dart';
 
 class ProfilePage extends StatefulWidget {
   final List<Map<String, String>> news;
-  final List<bool> bookmarked;
-  final ValueChanged<int> onBookmarkChanged;
   final SettingsController settingsController;
 
   const ProfilePage({
     super.key,
     required this.news,
-    required this.bookmarked,
-    required this.onBookmarkChanged,
     required this.settingsController,
   });
 
@@ -29,14 +26,24 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String username = "Loading...";
-  String email = "Loading...";
+  // null  = still loading
+  // ''    = loaded, but no username stored (shows the default "User" label)
+  String? _username;
+  String? _email;
 
   @override
   void initState() {
     super.initState();
     loadUserDetails();
   }
+
+  String _usernameText(AppStrings s) {
+    if (_username == null) return s.loading;
+    if (_username!.isEmpty) return s.defaultUser;
+    return _username!;
+  }
+
+  String _emailText(AppStrings s) => _email ?? s.loading;
 
   Future<void> loadUserDetails() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -52,20 +59,20 @@ class _ProfilePageState extends State<ProfilePage> {
       if (!mounted) return;
 
       setState(() {
-        email = user.email ?? "";
+        _email = user.email ?? "";
 
         if (doc.exists) {
-          username = doc.data()?["username"] ?? "User";
+          _username = (doc.data()?["username"] ?? "").toString();
         } else {
-          username = "User";
+          _username = "";
         }
       });
     } catch (e) {
       if (!mounted) return;
 
       setState(() {
-        username = "User";
-        email = user.email ?? "";
+        _username = "";
+        _email = user.email ?? "";
       });
     }
   }
@@ -79,14 +86,16 @@ class _ProfilePageState extends State<ProfilePage> {
 
     final accentColor = isDark ? darkBrownColor : brownColor;
 
+    final s = AppStrings.of(context);
+
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: cardBackgroundColor,
 
           title: Text(
-            "YOUR DETAILS",
+            s.yourDetails.toUpperCase(),
             style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
           ),
 
@@ -95,7 +104,7 @@ class _ProfilePageState extends State<ProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "USERNAME",
+                s.usernameLabel.toUpperCase(),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: accentColor,
@@ -104,12 +113,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
               const SizedBox(height: 5),
 
-              Text(username, style: TextStyle(fontSize: 15, color: textColor)),
+              Text(
+                _usernameText(s),
+                style: TextStyle(fontSize: 15, color: textColor),
+              ),
 
               const SizedBox(height: 20),
 
               Text(
-                "EMAIL",
+                s.emailLabel.toUpperCase(),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: accentColor,
@@ -118,16 +130,22 @@ class _ProfilePageState extends State<ProfilePage> {
 
               const SizedBox(height: 5),
 
-              Text(email, style: TextStyle(fontSize: 15, color: textColor)),
+              Text(
+                _emailText(s),
+                style: TextStyle(fontSize: 15, color: textColor),
+              ),
             ],
           ),
 
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
               },
-              child: Text("CLOSE", style: TextStyle(color: accentColor)),
+              child: Text(
+                s.close.toUpperCase(),
+                style: TextStyle(color: accentColor),
+              ),
             ),
           ],
         );
@@ -139,7 +157,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final strings = AppStrings(widget.settingsController.language);
+    final s = AppStrings.of(context);
 
     final backgroundColor = isDark ? darkPaperColor : paperColor;
 
@@ -152,6 +170,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final dividerColor = isDark ? darkBorderColor : borderColor;
 
     final fadedBackgroundColor = isDark ? darkFadedColor : fadedColor;
+
     return Theme(
       data: Theme.of(context).copyWith(
         textTheme: GoogleFonts.libreBaskervilleTextTheme(
@@ -168,7 +187,7 @@ class _ProfilePageState extends State<ProfilePage> {
           backgroundColor: backgroundColor,
           foregroundColor: textColor,
           title: Text(
-            "PROFILE",
+            s.profileTitle.toUpperCase(),
             style: TextStyle(
               fontWeight: FontWeight.w900,
               letterSpacing: 1.5,
@@ -190,7 +209,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
             Center(
               child: Text(
-                username,
+                _usernameText(s),
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
@@ -203,7 +222,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
             Center(
               child: Text(
-                "Welcome to The Clean News Global",
+                s.welcomeToApp,
+                textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, color: accentColor),
               ),
             ),
@@ -222,14 +242,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   ListTile(
                     leading: Icon(Icons.bookmark_outline, color: accentColor),
                     title: Text(
-                      strings.savedArticles,
+                      s.savedArticles,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: textColor,
                       ),
                     ),
                     subtitle: Text(
-                      "Manage your saved news",
+                      s.manageSavedNews,
                       style: TextStyle(color: accentColor),
                     ),
                     trailing: Icon(Icons.chevron_right, color: accentColor),
@@ -237,11 +257,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => SavedPage(
-                            news: widget.news,
-                            bookmarked: widget.bookmarked,
-                            onBookmarkChanged: widget.onBookmarkChanged,
-                          ),
+                          builder: (context) => const SavedPage(),
                         ),
                       );
                     },
@@ -253,14 +269,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   ListTile(
                     leading: Icon(Icons.notifications_none, color: accentColor),
                     title: Text(
-                      strings.notifications,
+                      s.notifications,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: textColor,
                       ),
                     ),
                     subtitle: Text(
-                      strings.manageNewsNotifications,
+                      s.manageNewsNotifications,
                       style: TextStyle(color: accentColor),
                     ),
                     trailing: Icon(Icons.chevron_right, color: accentColor),
@@ -285,14 +301,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   ListTile(
                     leading: Icon(Icons.person_outline, color: accentColor),
                     title: Text(
-                      strings.details,
+                      s.details,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: textColor,
                       ),
                     ),
                     subtitle: Text(
-                      strings.viewUsernameEmail,
+                      s.viewUsernameEmail,
                       style: TextStyle(color: accentColor),
                     ),
                     trailing: Icon(Icons.chevron_right, color: accentColor),
@@ -305,26 +321,27 @@ class _ProfilePageState extends State<ProfilePage> {
                   ListTile(
                     leading: Icon(Icons.info_outline, color: accentColor),
                     title: Text(
-                      strings.aboutUs,
+                      s.aboutUs,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: textColor,
                       ),
                     ),
                     subtitle: Text(
-                      strings.aboutCleanNews,
+                      s.aboutCleanNews,
                       style: TextStyle(color: accentColor),
                     ),
                     trailing: Icon(Icons.chevron_right, color: accentColor),
                     onTap: () {
                       showAboutDialog(
                         context: context,
-                        applicationName: "The Clean News Global",
+                        applicationName: s.brandName,
                         applicationVersion: "1.0.0",
                         applicationIcon: Icon(
                           Icons.newspaper,
                           color: accentColor,
                         ),
+                        children: [Text(s.aboutCleanNewsDescription)],
                       );
                     },
                   ),
@@ -341,7 +358,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: OutlinedButton.icon(
                 icon: Icon(Icons.logout, color: accentColor),
                 label: Text(
-                  strings.logout,
+                  s.logout.toUpperCase(),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1,
@@ -354,7 +371,13 @@ class _ProfilePageState extends State<ProfilePage> {
                     borderRadius: BorderRadius.zero,
                   ),
                 ),
-                onPressed: () {
+                onPressed: () async {
+                  // Actually sign out of Firebase, otherwise the user would
+                  // still be signed in the next time the app opens.
+                  await AuthService().logout();
+
+                  if (!context.mounted) return;
+
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
@@ -372,7 +395,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
             Center(
               child: Text(
-                "THE CLEAN NEWS GLOBAL",
+                s.brandName.toUpperCase(),
                 style: TextStyle(
                   fontSize: 11,
                   letterSpacing: 2,

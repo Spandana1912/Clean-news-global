@@ -4,6 +4,7 @@ import 'theme.dart';
 import 'home_page.dart';
 import 'settings_page.dart';
 import 'settings_controller.dart';
+import 'app_strings.dart';
 
 class NotificationsPage extends StatelessWidget {
   final List<Map<String, String>> trendingNews;
@@ -19,16 +20,28 @@ class NotificationsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final backgroundColor = isDark ? darkPaperColor : paperColor;
+    final cardBackgroundColor = isDark ? darkCardColor : cardColor;
+    final textColor = isDark ? darkInkColor : inkColor;
+    final accentColor = isDark ? darkBrownColor : brownColor;
+    final dividerColor = isDark ? darkBorderColor : borderColor;
+
     return Scaffold(
-      backgroundColor: paperColor,
+      backgroundColor: backgroundColor,
 
       appBar: AppBar(
-        title: const Text(
-          "NOTIFICATIONS",
+        backgroundColor: backgroundColor,
+        foregroundColor: textColor,
+        title: Text(
+          s.notifications.toUpperCase(),
           style: TextStyle(
             fontWeight: FontWeight.w900,
             letterSpacing: 1.5,
-            color: inkColor,
+            color: textColor,
           ),
         ),
       ),
@@ -40,31 +53,31 @@ class NotificationsPage extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.notifications_off_outlined,
-                      color: brownColor,
+                      color: accentColor,
                       size: 60,
                     ),
 
                     const SizedBox(height: 20),
 
-                    const Text(
-                      "Notifications are disabled",
+                    Text(
+                      s.notificationsDisabledTitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w900,
-                        color: inkColor,
+                        color: textColor,
                       ),
                     ),
 
                     const SizedBox(height: 12),
 
-                    const Text(
-                      "Enable notifications in Settings to get the latest news updates.",
+                    Text(
+                      s.enableNotificationsHint,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: brownColor,
+                        color: accentColor,
                         fontSize: 15,
                         height: 1.5,
                       ),
@@ -84,13 +97,13 @@ class NotificationsPage extends StatelessWidget {
                         );
                       },
                       icon: const Icon(Icons.settings_outlined),
-                      label: const Text(
-                        "GO TO SETTINGS",
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      label: Text(
+                        s.goToSettings.toUpperCase(),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: brownColor,
-                        foregroundColor: paperColor,
+                        backgroundColor: accentColor,
+                        foregroundColor: backgroundColor,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 13,
@@ -102,10 +115,10 @@ class NotificationsPage extends StatelessWidget {
               ),
             )
           : trendingNews.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
-                "No new notifications.",
-                style: TextStyle(color: brownColor, fontSize: 15),
+                s.noNewNotifications,
+                style: TextStyle(color: accentColor, fontSize: 15),
               ),
             )
           : ListView.builder(
@@ -118,8 +131,8 @@ class NotificationsPage extends StatelessWidget {
                   margin: const EdgeInsets.only(bottom: 14),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: cardColor,
-                    border: Border.all(color: borderColor),
+                    color: cardBackgroundColor,
+                    border: Border.all(color: dividerColor),
                   ),
                   child: ListTile(
                     contentPadding: EdgeInsets.zero,
@@ -129,8 +142,8 @@ class NotificationsPage extends StatelessWidget {
 
                       if (articleUrl == null || articleUrl.trim().isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Article link is not available."),
+                          SnackBar(
+                            content: Text(s.linkUnavailable),
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
@@ -146,25 +159,25 @@ class NotificationsPage extends StatelessWidget {
                       );
                     },
 
-                    leading: const Icon(
+                    leading: Icon(
                       Icons.notifications_active_outlined,
-                      color: brownColor,
+                      color: accentColor,
                       size: 30,
                     ),
 
                     title: Text(
                       article["title"] ?? "",
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w900,
-                        color: inkColor,
+                        color: textColor,
                       ),
                     ),
 
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
-                        "${article["source"] ?? "News"} • ${article["time"] ?? ""}",
-                        style: const TextStyle(color: brownColor),
+                        "${article["source"] ?? s.defaultNewsSource} • ${article["time"] ?? ""}",
+                        style: TextStyle(color: accentColor),
                       ),
                     ),
                   ),
