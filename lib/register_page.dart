@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'services/auth_service.dart';
 import 'email_verification_page.dart';
 import 'settings_controller.dart';
+import 'app_strings.dart';
 
 class RegisterPage extends StatefulWidget {
   final SettingsController settingsController;
@@ -86,16 +87,14 @@ class _RegisterPageState extends State<RegisterPage> {
           builder: (dialogContext) => AlertDialog(
             backgroundColor: const Color(0xFFEFE2C7),
             title: Text(
-              'ACCOUNT CREATED',
+              AppStrings.of(context).accountCreated,
               style: GoogleFonts.libreBaskerville(
                 fontWeight: FontWeight.bold,
                 color: darkBrown,
               ),
             ),
             content: Text(
-              '$message\n\nYour account may already exist. You can open '
-              'the verification screen and try sending the email again. '
-              'Do not register repeatedly with the same email.',
+              '$message\n\n${AppStrings.of(dialogContext).accountMayExist}',
               style: GoogleFonts.libreBaskerville(
                 fontSize: 12,
                 height: 1.5,
@@ -108,7 +107,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Navigator.pop(dialogContext);
                 },
                 child: Text(
-                  'STAY HERE',
+                  AppStrings.of(context).stayHere,
                   style: GoogleFonts.libreBaskerville(color: mediumBrown),
                 ),
               ),
@@ -129,7 +128,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   );
                 },
                 child: Text(
-                  'OPEN VERIFICATION',
+                  AppStrings.of(context).openVerification,
                   style: GoogleFonts.libreBaskerville(fontSize: 11),
                 ),
               ),
@@ -235,7 +234,7 @@ class _RegisterPageState extends State<RegisterPage> {
         foregroundColor: darkBrown,
         elevation: 0,
         title: Text(
-          'SUBSCRIBE',
+          AppStrings.of(context).subscribeTitle,
           style: GoogleFonts.libreBaskerville(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -266,7 +265,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 // NEWSPAPER NAME
                 Center(
                   child: Text(
-                    'CLEAN NEWS GLOBAL',
+                    AppStrings.of(context).cleanNewsGlobalCaps,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.libreBaskerville(
                       fontSize: 11,
@@ -281,7 +280,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 Center(
                   child: Text(
-                    'EST. 2026  •  INDEPENDENT NEWS',
+                    AppStrings.of(context).estIndependent,
                     style: GoogleFonts.libreBaskerville(
                       fontSize: 8,
                       letterSpacing: 1.2,
@@ -299,7 +298,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 // MAIN HEADING
                 Center(
                   child: Text(
-                    'Create Your Reader Account',
+                    AppStrings.of(context).createReaderAccount,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.libreBaskerville(
                       fontSize: 20,
@@ -314,7 +313,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 Center(
                   child: Text(
-                    'Join Clean News Global and stay informed.',
+                    AppStrings.of(context).joinAndStayInformed,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.libreBaskerville(
                       fontSize: 11,
@@ -349,7 +348,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Text(
-                              'READER REGISTRATION',
+                              AppStrings.of(context).readerRegistration,
                               style: GoogleFonts.libreBaskerville(
                                 fontSize: 9,
                                 fontWeight: FontWeight.bold,
@@ -367,7 +366,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 24),
 
                       // USERNAME
-                      Text('USERNAME', style: _labelStyle()),
+                      Text(AppStrings.of(context).usernameCaps, style: _labelStyle()),
 
                       const SizedBox(height: 8),
 
@@ -379,16 +378,16 @@ class _RegisterPageState extends State<RegisterPage> {
                           color: darkBrown,
                         ),
                         decoration: _fieldDecoration(
-                          hintText: 'Enter your username',
+                          hintText: AppStrings.of(context).enterUsername,
                           icon: Icons.person_outline,
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Please enter a username';
+                            return AppStrings.of(context).pleaseEnterUsername;
                           }
 
                           if (value.trim().length < 3) {
-                            return 'Username must be at least 3 characters';
+                            return AppStrings.of(context).usernameMinLength;
                           }
 
                           return null;
@@ -398,7 +397,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 20),
 
                       // EMAIL
-                      Text('EMAIL ADDRESS', style: _labelStyle()),
+                      Text(AppStrings.of(context).emailAddress, style: _labelStyle()),
 
                       const SizedBox(height: 8),
 
@@ -410,14 +409,14 @@ class _RegisterPageState extends State<RegisterPage> {
                           color: darkBrown,
                         ),
                         decoration: _fieldDecoration(
-                          hintText: 'Enter your email',
+                          hintText: AppStrings.of(context).enterEmail,
                           icon: Icons.email_outlined,
                         ),
                         validator: (value) {
                           final email = value?.trim() ?? '';
 
                           if (email.isEmpty) {
-                            return 'Please enter your email';
+                            return AppStrings.of(context).pleaseEnterEmail;
                           }
 
                           final emailPattern = RegExp(
@@ -425,7 +424,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           );
 
                           if (!emailPattern.hasMatch(email)) {
-                            return 'Please enter a valid email';
+                            return AppStrings.of(context).pleaseEnterValidEmail;
                           }
 
                           return null;
@@ -435,7 +434,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 20),
 
                       // PASSWORD
-                      Text('PASSWORD', style: _labelStyle()),
+                      Text(AppStrings.of(context).password, style: _labelStyle()),
 
                       const SizedBox(height: 8),
 
@@ -447,7 +446,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           color: darkBrown,
                         ),
                         decoration: _fieldDecoration(
-                          hintText: 'Create a password',
+                          hintText: AppStrings.of(context).createPassword,
                           icon: Icons.lock_outline,
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -466,7 +465,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter a password';
+                            return AppStrings.of(context).pleaseEnterPassword;
                           }
 
                           return AuthService.validatePassword(value);
@@ -476,7 +475,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 20),
 
                       // CONFIRM PASSWORD
-                      Text('CONFIRM PASSWORD', style: _labelStyle()),
+                      Text(AppStrings.of(context).confirmPassword, style: _labelStyle()),
 
                       const SizedBox(height: 8),
 
@@ -489,16 +488,16 @@ class _RegisterPageState extends State<RegisterPage> {
                           color: darkBrown,
                         ),
                         decoration: _fieldDecoration(
-                          hintText: 'Re-enter your password',
+                          hintText: AppStrings.of(context).reEnterPassword,
                           icon: Icons.lock_outline,
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please confirm your password';
+                            return AppStrings.of(context).pleaseConfirmPassword;
                           }
 
                           if (value != _passwordController.text) {
-                            return 'Passwords do not match';
+                            return AppStrings.of(context).passwordsDoNotMatch;
                           }
 
                           return null;
@@ -531,7 +530,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   ),
                                 )
                               : Text(
-                                  'CREATE ACCOUNT',
+                                  AppStrings.of(context).createAccount,
                                   style: GoogleFonts.libreBaskerville(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -556,7 +555,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             Navigator.pop(context);
                           },
                     child: Text(
-                      'Already have an account?  Back to Login',
+                      AppStrings.of(context).alreadyHaveAccount,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.libreBaskerville(
                         fontSize: 12,
@@ -577,7 +576,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 Center(
                   child: Text(
-                    'YOUR DAILY SOURCE FOR CLEAN NEWS',
+                    AppStrings.of(context).yourDailySource,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.libreBaskerville(
                       fontSize: 7,

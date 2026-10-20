@@ -1,543 +1,9 @@
-// import 'package:flutter/material.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:google_fonts/google_fonts.dart';
-
-// import 'theme.dart';
-// import 'settings_controller.dart';
-
-// class SettingsPage extends StatefulWidget {
-//   final SettingsController settingsController;
-
-//   const SettingsPage({super.key, required this.settingsController});
-
-//   @override
-//   State<SettingsPage> createState() => _SettingsPageState();
-// }
-
-// class _SettingsPageState extends State<SettingsPage> {
-//   final FirebaseAuth _auth = FirebaseAuth.instance;
-
-//   Future<void> _changePassword() async {
-//     final passwordController = TextEditingController();
-
-//     await showDialog(
-//       context: context,
-//       builder: (context) {
-//         final isDark = Theme.of(context).brightness == Brightness.dark;
-
-//         final cardBackgroundColor = isDark ? darkCardColor : cardColor;
-
-//         final textColor = isDark ? darkInkColor : inkColor;
-
-//         final accentColor = isDark ? darkBrownColor : brownColor;
-
-//         return AlertDialog(
-//           backgroundColor: cardBackgroundColor,
-//           title: Text(
-//             "CHANGE PASSWORD",
-//             style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
-//           ),
-//           content: TextField(
-//             controller: passwordController,
-//             obscureText: true,
-//             style: TextStyle(color: textColor),
-//             decoration: InputDecoration(
-//               labelText: "New Password",
-//               labelStyle: TextStyle(color: accentColor),
-//             ),
-//           ),
-//           actions: [
-//             TextButton(
-//               onPressed: () {
-//                 Navigator.pop(context);
-//               },
-//               child: Text("CANCEL", style: TextStyle(color: accentColor)),
-//             ),
-//             TextButton(
-//               onPressed: () async {
-//                 final password = passwordController.text.trim();
-
-//                 if (password.isEmpty) {
-//                   return;
-//                 }
-
-//                 try {
-//                   await _auth.currentUser?.updatePassword(password);
-
-//                   if (!context.mounted) return;
-
-//                   Navigator.pop(context);
-
-//                   ScaffoldMessenger.of(context).showSnackBar(
-//                     SnackBar(
-//                       backgroundColor: accentColor,
-//                       content: Text(
-//                         "Password updated successfully.",
-//                         style: TextStyle(
-//                           color: isDark ? darkPaperColor : paperColor,
-//                         ),
-//                       ),
-//                     ),
-//                   );
-//                 } catch (e) {
-//                   if (!context.mounted) return;
-
-//                   Navigator.pop(context);
-
-//                   ScaffoldMessenger.of(context).showSnackBar(
-//                     SnackBar(
-//                       backgroundColor: accentColor,
-//                       content: Text(
-//                         "Unable to update password.",
-//                         style: TextStyle(
-//                           color: isDark ? darkPaperColor : paperColor,
-//                         ),
-//                       ),
-//                     ),
-//                   );
-//                 }
-//               },
-//               child: Text(
-//                 "UPDATE",
-//                 style: TextStyle(
-//                   color: accentColor,
-//                   fontWeight: FontWeight.bold,
-//                 ),
-//               ),
-//             ),
-//           ],
-//         );
-//       },
-//     );
-
-//     passwordController.dispose();
-//   }
-
-//   void _showTextSizeDialog() {
-//     showDialog(
-//       context: context,
-//       builder: (context) {
-//         final isDark = Theme.of(context).brightness == Brightness.dark;
-
-//         final cardBackgroundColor = isDark ? darkCardColor : cardColor;
-
-//         final textColor = isDark ? darkInkColor : inkColor;
-
-//         final accentColor = isDark ? darkBrownColor : brownColor;
-
-//         return AlertDialog(
-//           backgroundColor: cardBackgroundColor,
-//           title: Text(
-//             "TEXT SIZE",
-//             style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
-//           ),
-//           content: Column(
-//             mainAxisSize: MainAxisSize.min,
-//             children: [
-//               RadioListTile<double>(
-//                 title: Text("Small", style: TextStyle(color: textColor)),
-//                 value: 0.9,
-//                 groupValue: widget.settingsController.textScale,
-//                 activeColor: accentColor,
-//                 onChanged: (value) {
-//                   if (value == null) return;
-
-//                   widget.settingsController.setTextScale(value);
-
-//                   Navigator.pop(context);
-//                 },
-//               ),
-//               RadioListTile<double>(
-//                 title: Text("Normal", style: TextStyle(color: textColor)),
-//                 value: 1.0,
-//                 groupValue: widget.settingsController.textScale,
-//                 activeColor: accentColor,
-//                 onChanged: (value) {
-//                   if (value == null) return;
-
-//                   widget.settingsController.setTextScale(value);
-
-//                   Navigator.pop(context);
-//                 },
-//               ),
-//               RadioListTile<double>(
-//                 title: Text("Large", style: TextStyle(color: textColor)),
-//                 value: 1.15,
-//                 groupValue: widget.settingsController.textScale,
-//                 activeColor: accentColor,
-//                 onChanged: (value) {
-//                   if (value == null) return;
-
-//                   widget.settingsController.setTextScale(value);
-
-//                   Navigator.pop(context);
-//                 },
-//               ),
-//             ],
-//           ),
-//         );
-//       },
-//     );
-//   }
-
-//   void _showLanguageDialog() {
-//     showDialog(
-//       context: context,
-//       builder: (context) {
-//         final isDark = Theme.of(context).brightness == Brightness.dark;
-
-//         final cardBackgroundColor = isDark ? darkCardColor : cardColor;
-
-//         final textColor = isDark ? darkInkColor : inkColor;
-
-//         final accentColor = isDark ? darkBrownColor : brownColor;
-
-//         return AlertDialog(
-//           backgroundColor: cardBackgroundColor,
-//           title: Text(
-//             "SELECT LANGUAGE",
-//             style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
-//           ),
-//           content: Column(
-//             mainAxisSize: MainAxisSize.min,
-//             children: [
-//               _languageOption("English", textColor, accentColor),
-//               _languageOption("Tamil", textColor, accentColor),
-//               _languageOption("Telugu", textColor, accentColor),
-//               _languageOption("Hindi", textColor, accentColor),
-//             ],
-//           ),
-//         );
-//       },
-//     );
-//   }
-
-//   Widget _languageOption(String value, Color textColor, Color accentColor) {
-//     return RadioListTile<String>(
-//       title: Text(value, style: TextStyle(color: textColor)),
-//       value: value,
-//       groupValue: widget.settingsController.language,
-//       activeColor: accentColor,
-//       onChanged: (newValue) {
-//         if (newValue == null) return;
-
-//         widget.settingsController.setLanguage(newValue);
-
-//         Navigator.pop(context);
-//       },
-//     );
-//   }
-
-//   void _showAbout() {
-//     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-//     final cardBackgroundColor = isDark ? darkCardColor : cardColor;
-
-//     final textColor = isDark ? darkInkColor : inkColor;
-
-//     final accentColor = isDark ? darkBrownColor : brownColor;
-
-//     showDialog(
-//       context: context,
-//       builder: (context) {
-//         return AlertDialog(
-//           backgroundColor: cardBackgroundColor,
-//           title: Text(
-//             "ABOUT US",
-//             style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
-//           ),
-//           content: Text(
-//             "The Clean News Global provides a clean and simple way to discover and read news from India and around the world.",
-//             style: TextStyle(color: textColor, height: 1.5),
-//           ),
-//           actions: [
-//             TextButton(
-//               onPressed: () {
-//                 Navigator.pop(context);
-//               },
-//               child: Text("OKAY", style: TextStyle(color: accentColor)),
-//             ),
-//           ],
-//         );
-//       },
-//     );
-//   }
-
-//   void _showPrivacyPolicy() {
-//     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-//     final cardBackgroundColor = isDark ? darkCardColor : cardColor;
-
-//     final textColor = isDark ? darkInkColor : inkColor;
-
-//     final accentColor = isDark ? darkBrownColor : brownColor;
-
-//     showDialog(
-//       context: context,
-//       builder: (context) {
-//         return AlertDialog(
-//           backgroundColor: cardBackgroundColor,
-//           title: Text(
-//             "PRIVACY POLICY",
-//             style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
-//           ),
-//           content: SingleChildScrollView(
-//             child: Text(
-//               "Your account information is used only to provide the features of The Clean News Global. We do not display your private account information publicly.",
-//               style: TextStyle(color: textColor, height: 1.5),
-//             ),
-//           ),
-//           actions: [
-//             TextButton(
-//               onPressed: () {
-//                 Navigator.pop(context);
-//               },
-//               child: Text("CLOSE", style: TextStyle(color: accentColor)),
-//             ),
-//           ],
-//         );
-//       },
-//     );
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-//     final backgroundColor = isDark ? darkPaperColor : paperColor;
-
-//     final cardBackgroundColor = isDark ? darkCardColor : cardColor;
-
-//     final textColor = isDark ? darkInkColor : inkColor;
-
-//     final accentColor = isDark ? darkBrownColor : brownColor;
-
-//     final dividerColor = isDark ? darkBorderColor : borderColor;
-
-//     final fadedBackgroundColor = isDark ? darkFadedColor : fadedColor;
-//     return Theme(
-//       data: Theme.of(context).copyWith(
-//         textTheme: GoogleFonts.libreBaskervilleTextTheme(
-//           Theme.of(context).textTheme,
-//         ),
-//         primaryTextTheme: GoogleFonts.libreBaskervilleTextTheme(
-//           Theme.of(context).primaryTextTheme,
-//         ),
-//       ),
-//       child: Scaffold(
-//         backgroundColor: backgroundColor,
-
-//         appBar: AppBar(
-//           backgroundColor: backgroundColor,
-//           foregroundColor: textColor,
-//           title: Text(
-//             "SETTINGS",
-//             style: TextStyle(
-//               fontWeight: FontWeight.w900,
-//               letterSpacing: 1.5,
-//               color: textColor,
-//             ),
-//           ),
-//         ),
-
-//         body: ListView(
-//           padding: const EdgeInsets.all(20),
-//           children: [
-//             Container(
-//               padding: const EdgeInsets.all(18),
-//               decoration: BoxDecoration(
-//                 color: cardBackgroundColor,
-//                 border: Border.all(color: dividerColor),
-//               ),
-//               child: Column(
-//                 children: [
-//                   ListTile(
-//                     leading: Icon(Icons.dark_mode_outlined, color: accentColor),
-//                     title: Text(
-//                       "Dark Mode",
-//                       style: TextStyle(
-//                         fontWeight: FontWeight.bold,
-//                         color: textColor,
-//                       ),
-//                     ),
-//                     subtitle: Text(
-//                       widget.settingsController.darkMode
-//                           ? "Dark theme enabled"
-//                           : "Light theme enabled",
-//                       style: TextStyle(color: accentColor),
-//                     ),
-//                     trailing: Switch(
-//                       value: widget.settingsController.darkMode,
-//                       activeThumbColor: accentColor,
-//                       activeTrackColor: fadedBackgroundColor,
-//                       onChanged: (value) {
-//                         widget.settingsController.setDarkMode(value);
-//                       },
-//                     ),
-//                   ),
-
-//                   Divider(color: dividerColor),
-
-//                   ListTile(
-//                     leading: Icon(Icons.notifications_none, color: accentColor),
-//                     title: Text(
-//                       "Notifications",
-//                       style: TextStyle(
-//                         fontWeight: FontWeight.bold,
-//                         color: textColor,
-//                       ),
-//                     ),
-//                     subtitle: Text(
-//                       widget.settingsController.notificationsEnabled
-//                           ? "News notifications enabled"
-//                           : "News notifications disabled",
-//                       style: TextStyle(color: accentColor),
-//                     ),
-//                     trailing: Switch(
-//                       value: widget.settingsController.notificationsEnabled,
-//                       activeThumbColor: accentColor,
-//                       activeTrackColor: fadedBackgroundColor,
-//                       onChanged: (value) {
-//                         widget.settingsController.setNotifications(value);
-//                       },
-//                     ),
-//                   ),
-
-//                   Divider(color: dividerColor),
-
-//                   ListTile(
-//                     leading: Icon(Icons.text_fields, color: accentColor),
-//                     title: Text(
-//                       "Text Size",
-//                       style: TextStyle(
-//                         fontWeight: FontWeight.bold,
-//                         color: textColor,
-//                       ),
-//                     ),
-//                     subtitle: Text(
-//                       "Adjust reading text size",
-//                       style: TextStyle(color: accentColor),
-//                     ),
-//                     trailing: Icon(Icons.chevron_right, color: accentColor),
-//                     onTap: _showTextSizeDialog,
-//                   ),
-
-//                   Divider(color: dividerColor),
-
-//                   ListTile(
-//                     leading: Icon(Icons.language, color: accentColor),
-//                     title: Text(
-//                       "Language",
-//                       style: TextStyle(
-//                         fontWeight: FontWeight.bold,
-//                         color: textColor,
-//                       ),
-//                     ),
-//                     subtitle: Text(
-//                       widget.settingsController.language,
-//                       style: TextStyle(color: accentColor),
-//                     ),
-//                     trailing: Icon(Icons.chevron_right, color: accentColor),
-//                     onTap: _showLanguageDialog,
-//                   ),
-//                 ],
-//               ),
-//             ),
-
-//             const SizedBox(height: 20),
-
-//             Container(
-//               padding: const EdgeInsets.all(18),
-//               decoration: BoxDecoration(
-//                 color: cardBackgroundColor,
-//                 border: Border.all(color: dividerColor),
-//               ),
-//               child: Column(
-//                 children: [
-//                   ListTile(
-//                     leading: Icon(Icons.lock_outline, color: accentColor),
-//                     title: Text(
-//                       "Change Password",
-//                       style: TextStyle(
-//                         fontWeight: FontWeight.bold,
-//                         color: textColor,
-//                       ),
-//                     ),
-//                     trailing: Icon(Icons.chevron_right, color: accentColor),
-//                     onTap: _changePassword,
-//                   ),
-
-//                   Divider(color: dividerColor),
-
-//                   ListTile(
-//                     leading: Icon(Icons.info_outline, color: accentColor),
-//                     title: Text(
-//                       "About Us",
-//                       style: TextStyle(
-//                         fontWeight: FontWeight.bold,
-//                         color: textColor,
-//                       ),
-//                     ),
-//                     trailing: Icon(Icons.chevron_right, color: accentColor),
-//                     onTap: _showAbout,
-//                   ),
-
-//                   Divider(color: dividerColor),
-
-//                   ListTile(
-//                     leading: Icon(
-//                       Icons.privacy_tip_outlined,
-//                       color: accentColor,
-//                     ),
-//                     title: Text(
-//                       "Privacy Policy",
-//                       style: TextStyle(
-//                         fontWeight: FontWeight.bold,
-//                         color: textColor,
-//                       ),
-//                     ),
-//                     trailing: Icon(Icons.chevron_right, color: accentColor),
-//                     onTap: _showPrivacyPolicy,
-//                   ),
-//                 ],
-//               ),
-//             ),
-
-//             const SizedBox(height: 30),
-
-//             Center(
-//               child: Text(
-//                 "THE CLEAN NEWS GLOBAL",
-//                 style: TextStyle(
-//                   fontSize: 11,
-//                   letterSpacing: 2,
-//                   color: accentColor,
-//                   fontWeight: FontWeight.bold,
-//                 ),
-//               ),
-//             ),
-
-//             const SizedBox(height: 20),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:google_fonts/google_fonts.dart';
 
 import 'theme.dart';
 import 'settings_controller.dart';
-import 'app_strings.dart';
-import 'services/auth_service.dart';
-
-import 'settings_controller.dart';
-
 import 'app_strings.dart';
 import 'services/auth_service.dart';
 
@@ -551,7 +17,9 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  // ==========================================================
+  // CHANGE PASSWORD
+  // ==========================================================
 
   Future<void> _changePassword() async {
     final formKey = GlobalKey<FormState>();
@@ -569,7 +37,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final textColor = isDark ? darkInkColor : inkColor;
     final accentColor = isDark ? darkBrownColor : brownColor;
     final fieldBackgroundColor = isDark ? darkFadedColor : fadedColor;
-    final strings = AppStrings(widget.settingsController.language);
+    final s = AppStrings.of(context);
 
     InputDecoration passwordDecoration({
       required String label,
@@ -590,7 +58,7 @@ class _SettingsPageState extends State<SettingsPage> {
           borderRadius: BorderRadius.circular(8),
         ),
         suffixIcon: IconButton(
-          tooltip: hidden ? 'Show password' : 'Hide password',
+          tooltip: hidden ? s.showPassword : s.hidePassword,
           icon: Icon(
             hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined,
             color: accentColor,
@@ -610,7 +78,7 @@ class _SettingsPageState extends State<SettingsPage> {
               return AlertDialog(
                 backgroundColor: cardBackgroundColor,
                 title: Text(
-                  strings.changePassword.toUpperCase(),
+                  s.changePassword.toUpperCase(),
                   style: TextStyle(
                     fontWeight: FontWeight.w900,
                     color: textColor,
@@ -630,7 +98,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             obscureText: hideCurrentPassword,
                             style: TextStyle(color: textColor),
                             decoration: passwordDecoration(
-                              label: 'Current Password',
+                              label: s.currentPassword,
                               hidden: hideCurrentPassword,
                               toggleVisibility: () => setDialogState(
                                 () =>
@@ -639,7 +107,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Enter your current password.';
+                                return s.enterCurrentPassword;
                               }
                               return null;
                             },
@@ -650,7 +118,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             obscureText: hideNewPassword,
                             style: TextStyle(color: textColor),
                             decoration: passwordDecoration(
-                              label: strings.newPassword,
+                              label: s.newPassword,
                               hidden: hideNewPassword,
                               toggleVisibility: () => setDialogState(
                                 () => hideNewPassword = !hideNewPassword,
@@ -663,14 +131,14 @@ class _SettingsPageState extends State<SettingsPage> {
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Enter a new password.';
+                                return s.enterNewPassword;
                               }
                               return AuthService.validatePassword(value);
                             },
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Password requirements',
+                            s.passwordRequirements,
                             style: TextStyle(
                               color: textColor,
                               fontWeight: FontWeight.bold,
@@ -679,9 +147,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '• At least 12 characters\n'
-                            '• One uppercase and one lowercase letter\n'
-                            '• One number and one special character',
+                            s.passwordRequirementsList,
                             style: TextStyle(
                               color: accentColor,
                               fontSize: 11,
@@ -694,7 +160,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             obscureText: hideConfirmPassword,
                             style: TextStyle(color: textColor),
                             decoration: passwordDecoration(
-                              label: 'Confirm New Password',
+                              label: s.confirmNewPassword,
                               hidden: hideConfirmPassword,
                               toggleVisibility: () => setDialogState(
                                 () =>
@@ -703,10 +169,10 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Confirm your new password.';
+                                return s.confirmYourNewPassword;
                               }
                               if (value != newPasswordController.text) {
-                                return 'Passwords do not match.';
+                                return s.passwordsDoNotMatch;
                               }
                               return null;
                             },
@@ -722,7 +188,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         ? null
                         : () => Navigator.of(dialogContext).pop(),
                     child: Text(
-                      strings.cancel.toUpperCase(),
+                      s.cancel.toUpperCase(),
                       style: TextStyle(color: accentColor),
                     ),
                   ),
@@ -742,7 +208,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 SnackBar(
                                   backgroundColor: accentColor,
                                   content: Text(
-                                    'Choose a password different from your current password.',
+                                    s.samePasswordError,
                                     style: TextStyle(
                                       color: isDark
                                           ? darkPaperColor
@@ -757,14 +223,13 @@ class _SettingsPageState extends State<SettingsPage> {
                             setDialogState(() => isUpdating = true);
 
                             try {
-                              // Update the password through the shared AuthService.
                               await AuthService().changePassword(
                                 currentPassword: currentPasswordController.text,
                                 newPassword: newPasswordController.text,
                               );
 
-                              // Verify the new password against Firebase immediately.
-                              // This prevents showing success unless Firebase accepts it.
+                              // Verify the new password against Firebase
+                              // before showing success.
                               final updatedUser =
                                   FirebaseAuth.instance.currentUser;
                               final updatedEmail = updatedUser?.email;
@@ -789,7 +254,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 SnackBar(
                                   backgroundColor: accentColor,
                                   content: Text(
-                                    strings.passwordUpdatedSuccessfully,
+                                    s.passwordUpdatedSuccessfully,
                                     style: TextStyle(
                                       color: isDark
                                           ? darkPaperColor
@@ -829,7 +294,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               color: isDark ? darkPaperColor : paperColor,
                             ),
                           )
-                        : Text(strings.update.toUpperCase()),
+                        : Text(s.update.toUpperCase()),
                   ),
                 ],
               );
@@ -844,129 +309,80 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  // ==========================================================
+  // TEXT SIZE
+  // ==========================================================
+
   void _showTextSizeDialog() {
     showDialog(
       context: context,
-
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-
+      builder: (dialogContext) {
+        final isDark = Theme.of(dialogContext).brightness == Brightness.dark;
         final cardBackgroundColor = isDark ? darkCardColor : cardColor;
-
         final textColor = isDark ? darkInkColor : inkColor;
-
         final accentColor = isDark ? darkBrownColor : brownColor;
+        final s = AppStrings.of(dialogContext);
 
-        final strings = AppStrings(widget.settingsController.language);
+        Widget option(String label, double value) {
+          return RadioListTile<double>(
+            title: Text(label, style: TextStyle(color: textColor)),
+            value: value,
+            groupValue: widget.settingsController.textScale,
+            activeColor: accentColor,
+            onChanged: (newValue) {
+              if (newValue == null) return;
+              widget.settingsController.setTextScale(newValue);
+              Navigator.pop(dialogContext);
+            },
+          );
+        }
 
         return AlertDialog(
           backgroundColor: cardBackgroundColor,
-
           title: Text(
-            strings.textSize.toUpperCase(),
-
+            s.textSize.toUpperCase(),
             style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
           ),
-
           content: Column(
             mainAxisSize: MainAxisSize.min,
-
             children: [
-              RadioListTile<double>(
-                title: Text("Small", style: TextStyle(color: textColor)),
-
-                value: 0.9,
-
-                groupValue: widget.settingsController.textScale,
-
-                activeColor: accentColor,
-
-                onChanged: (value) {
-                  if (value == null) return;
-
-                  widget.settingsController.setTextScale(value);
-
-                  Navigator.pop(context);
-                },
-              ),
-
-              RadioListTile<double>(
-                title: Text("Normal", style: TextStyle(color: textColor)),
-
-                value: 1.0,
-
-                groupValue: widget.settingsController.textScale,
-
-                activeColor: accentColor,
-
-                onChanged: (value) {
-                  if (value == null) return;
-
-                  widget.settingsController.setTextScale(value);
-
-                  Navigator.pop(context);
-                },
-              ),
-
-              RadioListTile<double>(
-                title: Text("Large", style: TextStyle(color: textColor)),
-
-                value: 1.15,
-
-                groupValue: widget.settingsController.textScale,
-
-                activeColor: accentColor,
-
-                onChanged: (value) {
-                  if (value == null) return;
-
-                  widget.settingsController.setTextScale(value);
-
-                  Navigator.pop(context);
-                },
-              ),
+              option(s.small, 0.9),
+              option(s.normal, 1.0),
+              option(s.large, 1.15),
             ],
           ),
         );
       },
     );
   }
+
+  // ==========================================================
+  // LANGUAGE
+  // ==========================================================
 
   void _showLanguageDialog() {
     showDialog(
       context: context,
-
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-
+      builder: (dialogContext) {
+        final isDark = Theme.of(dialogContext).brightness == Brightness.dark;
         final cardBackgroundColor = isDark ? darkCardColor : cardColor;
-
         final textColor = isDark ? darkInkColor : inkColor;
-
         final accentColor = isDark ? darkBrownColor : brownColor;
-
-        final strings = AppStrings(widget.settingsController.language);
+        final s = AppStrings.of(dialogContext);
 
         return AlertDialog(
           backgroundColor: cardBackgroundColor,
-
           title: Text(
-            strings.languageText.toUpperCase(),
-
+            s.selectLanguage.toUpperCase(),
             style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
           ),
-
           content: Column(
             mainAxisSize: MainAxisSize.min,
-
             children: [
-              _languageOption("English", textColor, accentColor),
-
-              _languageOption("Tamil", textColor, accentColor),
-
-              _languageOption("Telugu", textColor, accentColor),
-
-              _languageOption("Hindi", textColor, accentColor),
+              _languageOption(dialogContext, 'English', textColor, accentColor),
+              _languageOption(dialogContext, 'Tamil', textColor, accentColor),
+              _languageOption(dialogContext, 'Telugu', textColor, accentColor),
+              _languageOption(dialogContext, 'Hindi', textColor, accentColor),
             ],
           ),
         );
@@ -974,164 +390,116 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _languageOption(String value, Color textColor, Color accentColor) {
+  Widget _languageOption(
+    BuildContext dialogContext,
+    String value,
+    Color textColor,
+    Color accentColor,
+  ) {
     return RadioListTile<String>(
-      title: Text(value, style: TextStyle(color: textColor)),
-
+      title: Text(
+        AppStrings.languageDisplayName(value),
+        style: TextStyle(color: textColor),
+      ),
       value: value,
-
       groupValue: widget.settingsController.language,
-
       activeColor: accentColor,
-
       onChanged: (newValue) {
         if (newValue == null) return;
 
+        // The whole app (including this page) rebuilds in the new language.
         widget.settingsController.setLanguage(newValue);
 
-        Navigator.pop(context);
+        Navigator.pop(dialogContext);
       },
     );
   }
 
-  void _showAbout() {
+  // ==========================================================
+  // ABOUT / PRIVACY
+  // ==========================================================
+
+  void _showInfoDialog({
+    required String title,
+    required String message,
+    required String buttonLabel,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     final cardBackgroundColor = isDark ? darkCardColor : cardColor;
-
     final textColor = isDark ? darkInkColor : inkColor;
-
     final accentColor = isDark ? darkBrownColor : brownColor;
-
-    final strings = AppStrings(widget.settingsController.language);
 
     showDialog(
       context: context,
-
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: cardBackgroundColor,
-
           title: Text(
-            strings.aboutUs.toUpperCase(),
-
+            title.toUpperCase(),
             style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
           ),
-
-          content: Text(
-            "The Clean News Global provides a clean and simple way "
-            "to discover and read news from India and around the world.",
-
-            style: TextStyle(color: textColor, height: 1.5),
-          ),
-
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-
-              child: Text("OKAY", style: TextStyle(color: accentColor)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showPrivacyPolicy() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final cardBackgroundColor = isDark ? darkCardColor : cardColor;
-
-    final textColor = isDark ? darkInkColor : inkColor;
-
-    final accentColor = isDark ? darkBrownColor : brownColor;
-
-    final strings = AppStrings(widget.settingsController.language);
-
-    showDialog(
-      context: context,
-
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: cardBackgroundColor,
-
-          title: Text(
-            strings.privacyPolicy.toUpperCase(),
-
-            style: TextStyle(fontWeight: FontWeight.w900, color: textColor),
-          ),
-
           content: SingleChildScrollView(
             child: Text(
-              "Your account information is used only to provide "
-              "the features of The Clean News Global. "
-              "We do not display your private account information publicly.",
-
+              message,
               style: TextStyle(color: textColor, height: 1.5),
             ),
           ),
-
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-
-              child: Text("CLOSE", style: TextStyle(color: accentColor)),
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(
+                buttonLabel.toUpperCase(),
+                style: TextStyle(color: accentColor),
+              ),
             ),
           ],
         );
       },
     );
   }
+
+  // ==========================================================
+  // BUILD
+  // ==========================================================
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final backgroundColor = isDark ? darkPaperColor : paperColor;
-
     final cardBackgroundColor = isDark ? darkCardColor : cardColor;
-
     final textColor = isDark ? darkInkColor : inkColor;
-
     final accentColor = isDark ? darkBrownColor : brownColor;
-
     final dividerColor = isDark ? darkBorderColor : borderColor;
-
     final fadedBackgroundColor = isDark ? darkFadedColor : fadedColor;
 
-    final strings = AppStrings(widget.settingsController.language);
+    final s = AppStrings.of(context);
+
+    Widget titleText(String text) => Text(
+      text,
+      style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
+    );
 
     return Theme(
       data: Theme.of(context).copyWith(
         textTheme: GoogleFonts.libreBaskervilleTextTheme(
           Theme.of(context).textTheme,
         ),
-
         primaryTextTheme: GoogleFonts.libreBaskervilleTextTheme(
           Theme.of(context).primaryTextTheme,
         ),
       ),
-
       child: Scaffold(
         backgroundColor: backgroundColor,
 
         appBar: AppBar(
           backgroundColor: backgroundColor,
-
           foregroundColor: textColor,
-
           title: Text(
-            strings.settings.toUpperCase(),
-
+            s.settings.toUpperCase(),
             style: TextStyle(
               fontWeight: FontWeight.w900,
-
               letterSpacing: 1.5,
-
               color: textColor,
             ),
           ),
@@ -1139,49 +507,29 @@ class _SettingsPageState extends State<SettingsPage> {
 
         body: ListView(
           padding: const EdgeInsets.all(20),
-
           children: [
             Container(
               padding: const EdgeInsets.all(18),
-
               decoration: BoxDecoration(
                 color: cardBackgroundColor,
-
                 border: Border.all(color: dividerColor),
               ),
-
               child: Column(
                 children: [
                   // DARK MODE
-
                   ListTile(
                     leading: Icon(Icons.dark_mode_outlined, color: accentColor),
-
-                    title: Text(
-                      strings.darkMode,
-
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-
-                        color: textColor,
-                      ),
-                    ),
-
+                    title: titleText(s.darkMode),
                     subtitle: Text(
                       widget.settingsController.darkMode
-                          ? "Dark theme enabled"
-                          : "Light theme enabled",
-
+                          ? s.darkThemeEnabled
+                          : s.lightThemeEnabled,
                       style: TextStyle(color: accentColor),
                     ),
-
                     trailing: Switch(
                       value: widget.settingsController.darkMode,
-
                       activeThumbColor: accentColor,
-
                       activeTrackColor: fadedBackgroundColor,
-
                       onChanged: (value) {
                         widget.settingsController.setDarkMode(value);
                       },
@@ -1191,36 +539,19 @@ class _SettingsPageState extends State<SettingsPage> {
                   Divider(color: dividerColor),
 
                   // NOTIFICATIONS
-
-                  // NOTIFICATIONS
                   ListTile(
                     leading: Icon(Icons.notifications_none, color: accentColor),
-
-                    title: Text(
-                      strings.notifications,
-
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-
-                        color: textColor,
-                      ),
-                    ),
-
+                    title: titleText(s.notifications),
                     subtitle: Text(
                       widget.settingsController.notificationsEnabled
-                          ? strings.newsNotificationsEnabled
-                          : strings.newsNotificationsDisabled,
-
+                          ? s.newsNotificationsEnabled
+                          : s.newsNotificationsDisabled,
                       style: TextStyle(color: accentColor),
                     ),
-
                     trailing: Switch(
                       value: widget.settingsController.notificationsEnabled,
-
                       activeThumbColor: accentColor,
-
                       activeTrackColor: fadedBackgroundColor,
-
                       onChanged: (value) {
                         widget.settingsController.setNotifications(value);
                       },
@@ -1232,25 +563,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   // TEXT SIZE
                   ListTile(
                     leading: Icon(Icons.text_fields, color: accentColor),
-
-                    title: Text(
-                      strings.textSize,
-
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-
-                        color: textColor,
-                      ),
-                    ),
-
+                    title: titleText(s.textSize),
                     subtitle: Text(
-                      "Adjust reading text size",
-
+                      s.adjustReadingTextSize,
                       style: TextStyle(color: accentColor),
                     ),
-
                     trailing: Icon(Icons.chevron_right, color: accentColor),
-
                     onTap: _showTextSizeDialog,
                   ),
 
@@ -1259,25 +577,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   // LANGUAGE
                   ListTile(
                     leading: Icon(Icons.language, color: accentColor),
-
-                    title: Text(
-                      strings.languageText,
-
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-
-                        color: textColor,
-                      ),
-                    ),
-
+                    title: titleText(s.languageText),
                     subtitle: Text(
-                      widget.settingsController.language,
-
+                      AppStrings.languageDisplayName(
+                        widget.settingsController.language,
+                      ),
                       style: TextStyle(color: accentColor),
                     ),
-
                     trailing: Icon(Icons.chevron_right, color: accentColor),
-
                     onTap: _showLanguageDialog,
                   ),
                 ],
@@ -1288,32 +595,17 @@ class _SettingsPageState extends State<SettingsPage> {
 
             Container(
               padding: const EdgeInsets.all(18),
-
               decoration: BoxDecoration(
                 color: cardBackgroundColor,
-
                 border: Border.all(color: dividerColor),
               ),
-
               child: Column(
                 children: [
                   // CHANGE PASSWORD
-
                   ListTile(
                     leading: Icon(Icons.lock_outline, color: accentColor),
-
-                    title: Text(
-                      strings.changePassword,
-
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-
-                        color: textColor,
-                      ),
-                    ),
-
+                    title: titleText(s.changePassword),
                     trailing: Icon(Icons.chevron_right, color: accentColor),
-
                     onTap: _changePassword,
                   ),
 
@@ -1322,20 +614,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   // ABOUT US
                   ListTile(
                     leading: Icon(Icons.info_outline, color: accentColor),
-
-                    title: Text(
-                      strings.aboutUs,
-
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-
-                        color: textColor,
-                      ),
-                    ),
-
+                    title: titleText(s.aboutUs),
                     trailing: Icon(Icons.chevron_right, color: accentColor),
-
-                    onTap: _showAbout,
+                    onTap: () => _showInfoDialog(
+                      title: s.aboutUs,
+                      message: s.aboutCleanNewsDescription,
+                      buttonLabel: s.okay,
+                    ),
                   ),
 
                   Divider(color: dividerColor),
@@ -1344,23 +629,15 @@ class _SettingsPageState extends State<SettingsPage> {
                   ListTile(
                     leading: Icon(
                       Icons.privacy_tip_outlined,
-
                       color: accentColor,
                     ),
-
-                    title: Text(
-                      strings.privacyPolicy,
-
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-
-                        color: textColor,
-                      ),
-                    ),
-
+                    title: titleText(s.privacyPolicy),
                     trailing: Icon(Icons.chevron_right, color: accentColor),
-
-                    onTap: _showPrivacyPolicy,
+                    onTap: () => _showInfoDialog(
+                      title: s.privacyPolicy,
+                      message: s.privacyPolicyDescription,
+                      buttonLabel: s.close,
+                    ),
                   ),
                 ],
               ),
@@ -1370,15 +647,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
             Center(
               child: Text(
-                "THE CLEAN NEWS GLOBAL",
-
+                s.brandName.toUpperCase(),
                 style: TextStyle(
                   fontSize: 11,
-
                   letterSpacing: 2,
-
                   color: accentColor,
-
                   fontWeight: FontWeight.bold,
                 ),
               ),

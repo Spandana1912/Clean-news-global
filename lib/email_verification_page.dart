@@ -9,6 +9,7 @@ import 'services/auth_service.dart';
 import 'home_page.dart';
 
 import 'settings_controller.dart';
+import 'app_strings.dart';
 
 class EmailVerificationPage extends StatefulWidget {
   final SettingsController settingsController;
@@ -55,13 +56,13 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
         );
       } else {
         _showMessage(
-          'Email not verified yet. Please open the verification link first.',
+          AppStrings.of(context).emailNotVerifiedYet,
         );
       }
     } catch (e) {
       if (!mounted) return;
       _showMessage(
-        'Verification check failed: ${e.toString().replaceFirst('Exception: ', '')}',
+        '${AppStrings.of(context).verificationCheckFailed}: ${e.toString().replaceFirst('Exception: ', '')}',
       );
     } finally {
       if (mounted) setState(() => _checking = false);
@@ -77,7 +78,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       if (!mounted) return;
 
       _showMessage(
-        'If your email is still unverified, a new verification link has been requested.',
+        AppStrings.of(context).verificationResent,
       );
     } catch (e) {
       if (!mounted) return;
@@ -118,7 +119,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
         centerTitle: true,
 
         title: Text(
-          'VERIFY YOUR EMAIL',
+          AppStrings.of(context).verifyYourEmail,
 
           style: GoogleFonts.libreBaskerville(
             fontSize: 14,
@@ -157,7 +158,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                   const SizedBox(height: 18),
 
                   Text(
-                    'CLEAN NEWS GLOBAL',
+                    AppStrings.of(context).cleanNewsGlobalCaps,
 
                     textAlign: TextAlign.center,
 
@@ -173,7 +174,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                   const SizedBox(height: 8),
 
                   Text(
-                    'A NOTE TO OUR NEW READERS',
+                    AppStrings.of(context).noteToReaders,
 
                     textAlign: TextAlign.center,
 
@@ -205,7 +206,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                   const SizedBox(height: 18),
 
                   Text(
-                    'Confirm your email address',
+                    AppStrings.of(context).confirmEmailAddress,
 
                     textAlign: TextAlign.center,
 
@@ -221,7 +222,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                   const SizedBox(height: 14),
 
                   Text(
-                    'We sent a verification link to:',
+                    AppStrings.of(context).weSentLink,
 
                     textAlign: TextAlign.center,
 
@@ -251,7 +252,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                   const SizedBox(height: 14),
 
                   Text(
-                    'Open the email and follow its verification link. Then return here and tap “I HAVE VERIFIED”. Check your spam folder if you cannot find the message.',
+                    AppStrings.of(context).verifyInstructions,
 
                     textAlign: TextAlign.center,
 
@@ -299,7 +300,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                               ),
                             )
                           : Text(
-                              'I HAVE VERIFIED',
+                              AppStrings.of(context).iHaveVerified,
 
                               style: GoogleFonts.cinzel(
                                 fontSize: 11,
@@ -339,7 +340,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : Text(
-                              'RESEND VERIFICATION EMAIL',
+                              AppStrings.of(context).resendVerification,
 
                               style: GoogleFonts.cinzel(
                                 fontSize: 10,
@@ -356,7 +357,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                     onPressed: _backToLogin,
 
                     child: Text(
-                      'SIGN OUT / BACK TO LOGIN',
+                      AppStrings.of(context).signOutBackToLogin,
 
                       style: GoogleFonts.libreBaskerville(
                         fontSize: 10,
@@ -375,7 +376,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                   const SizedBox(height: 8),
 
                   Text(
-                    'READ • DISCOVER • UNDERSTAND',
+                    AppStrings.of(context).readDiscoverUnderstand,
 
                     textAlign: TextAlign.center,
 

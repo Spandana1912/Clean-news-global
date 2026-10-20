@@ -25,4 +25,28 @@ class Article {
       articleUrl: json['url'] ?? '',
     );
   }
+
+  /// Used when saving the article to Firestore.
+  Map<String, dynamic> toMap() {
+    return {
+      'title': title,
+      'description': description,
+      'imageUrl': imageUrl,
+      'source': source,
+      'publishedAt': publishedAt,
+      'articleUrl': articleUrl,
+    };
+  }
+
+  /// Used when reading a saved article back from Firestore.
+  factory Article.fromMap(Map<String, dynamic> map) {
+    return Article(
+      title: (map['title'] ?? 'No title available').toString(),
+      description: (map['description'] ?? '').toString(),
+      imageUrl: (map['imageUrl'] ?? '').toString(),
+      source: (map['source'] ?? 'Unknown source').toString(),
+      publishedAt: (map['publishedAt'] ?? '').toString(),
+      articleUrl: (map['articleUrl'] ?? '').toString(),
+    );
+  }
 }

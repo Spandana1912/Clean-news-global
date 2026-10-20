@@ -5,6 +5,7 @@ import 'home_page.dart';
 import 'register_page.dart';
 import 'services/auth_service.dart';
 import 'settings_controller.dart';
+import 'app_strings.dart';
 
 class LoginPage extends StatefulWidget {
   final SettingsController settingsController;
@@ -37,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
         SnackBar(
           backgroundColor: const Color(0xFF30251E),
           content: Text(
-            "Please enter your username and password.",
+            AppStrings.of(context).loginEnterCredentials,
             style: GoogleFonts.libreBaskerville(
               color: const Color(0xFFF3E8D0),
               fontSize: 12,
@@ -78,7 +79,7 @@ class _LoginPageState extends State<LoginPage> {
             backgroundColor: const Color(0xFFE8D9BA),
 
             title: Text(
-              "LOGIN FAILED",
+              AppStrings.of(context).loginFailed,
               style: GoogleFonts.cinzel(
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF3A2E26),
@@ -99,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
                   Navigator.pop(context);
                 },
                 child: Text(
-                  "OKAY",
+                  AppStrings.of(context).okay.toUpperCase(),
                   style: GoogleFonts.libreBaskerville(
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF6B4F3A),
@@ -160,7 +161,7 @@ class _LoginPageState extends State<LoginPage> {
 
                         children: [
                           Text(
-                            "THE DAILY EDITION",
+                            AppStrings.of(context).theDailyEdition,
 
                             style: GoogleFonts.cinzel(
                               fontSize: 8,
@@ -171,7 +172,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
 
                           Text(
-                            "VOL. I • NO. 01",
+                            AppStrings.of(context).volNo,
 
                             style: GoogleFonts.cinzel(
                               fontSize: 8,
@@ -194,7 +195,7 @@ class _LoginPageState extends State<LoginPage> {
                       // MAIN NEWSPAPER MASTHEAD
                       // ==================================================
                       Text(
-                        "CLEAN NEWS",
+                        AppStrings.of(context).mastheadClean,
 
                         textAlign: TextAlign.center,
 
@@ -210,7 +211,7 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 4),
 
                       Text(
-                        "GLOBAL",
+                        AppStrings.of(context).mastheadGlobal,
 
                         style: GoogleFonts.cinzel(
                           fontSize: 14,
@@ -248,7 +249,7 @@ class _LoginPageState extends State<LoginPage> {
 
                         children: [
                           Text(
-                            "EST. 2026",
+                            AppStrings.of(context).est,
 
                             style: GoogleFonts.cinzel(
                               fontSize: 8,
@@ -259,7 +260,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
 
                           Text(
-                            "NEWS • CULTURE • WORLD",
+                            AppStrings.of(context).newsCultureWorld,
 
                             style: GoogleFonts.cinzel(
                               fontSize: 7,
@@ -270,7 +271,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
 
                           Text(
-                            "DAILY",
+                            AppStrings.of(context).daily,
 
                             style: GoogleFonts.cinzel(
                               fontSize: 8,
@@ -307,7 +308,7 @@ class _LoginPageState extends State<LoginPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 10),
 
                       child: Text(
-                        "WELCOME, READER",
+                        AppStrings.of(context).welcomeReader,
 
                         style: GoogleFonts.cinzel(
                           fontSize: 10,
@@ -330,7 +331,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 8),
 
                 Text(
-                  "Your daily window to the world.",
+                  AppStrings.of(context).dailyWindow,
 
                   textAlign: TextAlign.center,
 
@@ -377,7 +378,7 @@ class _LoginPageState extends State<LoginPage> {
                       // ==================================================
 
                       Text(
-                        "TODAY'S READER",
+                        AppStrings.of(context).todaysReader,
 
                         style: GoogleFonts.bodoniModa(
                           fontSize: 24,
@@ -400,7 +401,7 @@ class _LoginPageState extends State<LoginPage> {
                       // USERNAME LABEL
                       // ==================================================
                       Text(
-                        "EMAIL ID",
+                        AppStrings.of(context).emailId,
 
                         style: GoogleFonts.cinzel(
                           fontSize: 9,
@@ -424,7 +425,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
 
                         decoration: InputDecoration(
-                          hintText: "Enter your Email ID",
+                          hintText: AppStrings.of(context).enterEmailId,
 
                           hintStyle: GoogleFonts.libreBaskerville(
                             fontSize: 12,
@@ -470,7 +471,7 @@ class _LoginPageState extends State<LoginPage> {
                       // PASSWORD LABEL
                       // ==================================================
                       Text(
-                        "PASSWORD",
+                        AppStrings.of(context).password,
 
                         style: GoogleFonts.cinzel(
                           fontSize: 9,
@@ -500,7 +501,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
 
                         decoration: InputDecoration(
-                          hintText: "Enter your password",
+                          hintText: AppStrings.of(context).enterPassword,
 
                           hintStyle: GoogleFonts.libreBaskerville(
                             fontSize: 12,
@@ -586,7 +587,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                 )
                               : Text(
-                                  "LOGIN",
+                                  AppStrings.of(context).login,
 
                                   style: GoogleFonts.cinzel(
                                     fontSize: 11,
@@ -608,7 +609,7 @@ class _LoginPageState extends State<LoginPage> {
 
                           children: [
                             Text(
-                              "First time reading? ",
+                              AppStrings.of(context).firstTimeReading,
 
                               style: GoogleFonts.libreBaskerville(
                                 fontSize: 11,
@@ -630,7 +631,7 @@ class _LoginPageState extends State<LoginPage> {
                               },
 
                               child: Text(
-                                "Subscribe",
+                                AppStrings.of(context).subscribe,
 
                                 style: GoogleFonts.libreBaskerville(
                                   fontSize: 11,
@@ -657,7 +658,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 8),
 
                 Text(
-                  "READ • DISCOVER • UNDERSTAND",
+                  AppStrings.of(context).readDiscoverUnderstand,
 
                   style: GoogleFonts.cinzel(
                     fontSize: 8,
@@ -670,7 +671,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 4),
 
                 Text(
-                  "A DAILY COLLECTION OF STORIES FROM AROUND THE WORLD",
+                  AppStrings.of(context).loginTagline,
 
                   textAlign: TextAlign.center,
 

@@ -3,6 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'firebase_options.dart';
@@ -12,6 +14,7 @@ import 'home_page.dart';
 import 'theme.dart';
 import 'settings_controller.dart';
 import 'notification_service.dart';
+import 'app_strings.dart';
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -24,6 +27,9 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Needed so dates can be formatted in Tamil / Telugu / Hindi
+  await initializeDateFormatting();
 
   // Load environment variables
   await dotenv.load(fileName: '.env');
@@ -83,6 +89,16 @@ class NewsApp extends StatelessWidget {
 
           navigatorKey: navigatorKey,
 
+          // Language (also localizes built-in Material widgets)
+          locale: Locale(AppStrings(settingsController.language).localeCode),
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          supportedLocales: const [
+            Locale('en'),
+            Locale('ta'),
+            Locale('te'),
+            Locale('hi'),
+          ],
+
           // LIGHT THEME
           theme: lightTheme,
           darkTheme: darkTheme,
@@ -94,11 +110,14 @@ class NewsApp extends StatelessWidget {
 
           // Change text size throughout the app
           builder: (context, child) {
-            return MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                textScaler: TextScaler.linear(settingsController.textScale),
+            return SettingsScope(
+              controller: settingsController,
+              child: MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: TextScaler.linear(settingsController.textScale),
+                ),
+                child: child!,
               ),
-              child: child!,
             );
           },
 
