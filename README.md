@@ -12,6 +12,7 @@ Features
 - Notifications screen: A dedicated screen for notification-related functionality.
 - AI article summaries: An AI summary service using Firebase AI Logic. This feature is still being tested and should not be considered reliable until verified.
 - updated weather and location API via Geo-locator.
+- Text-to-voice article summary.
 Built With
 - Flutter and Dart — application UI and app logic
 - Firebase Authentication — user authentication
