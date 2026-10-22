@@ -11,6 +11,7 @@ Features
 - Theme support: Theme-related settings for the reading experience.
 - Notifications screen: A dedicated screen for notification-related functionality.
 - AI article summaries: An AI summary service using Firebase AI Logic. This feature is still being tested and should not be considered reliable until verified.
+- updated weather and location API via Geo-locator.
 Built With
 - Flutter and Dart — application UI and app logic
 - Firebase Authentication — user authentication
@@ -29,4 +30,4 @@ Install the following before running the project:
 - Dart SDK (included with Flutter)
 - Git
 - A code editor such as Visual Studio Code or Android Studio
-- A Firebase project configured for the platforms you intend to run
+- A Firebase project configured for the platforms you intend to run.
